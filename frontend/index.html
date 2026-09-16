@@ -1,3 +1,6 @@
+
+
+Index · HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,7 +9,7 @@
 <title>Maná — Fidelidade</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
-
+ 
   :root{
     --acai: #2B1A45;
     --acai-2: #3A2560;
@@ -33,11 +36,11 @@
     padding:10px 20px; border-radius:10px; cursor:pointer; transition:all .2s ease;
   }
   .switcher button.active{ background:var(--yellow); color:var(--acai); }
-
+ 
   .stage{ max-width:960px; margin:0 auto; }
   .view{ display:none; }
   .view.active{ display:block; }
-
+ 
   /* ---------- CLIENTE (PWA) ---------- */
   .phone{
     width:368px; margin:0 auto; background:var(--acai);
@@ -54,7 +57,7 @@
     display:flex; align-items:center; justify-content:center;
     font-weight:800; color:var(--acai); font-size:14px;
   }
-
+ 
   .hero{
     position:relative; overflow:hidden;
     background:linear-gradient(165deg, var(--acai-3), var(--acai-2));
@@ -70,16 +73,16 @@
   }
   .hero-value span{ font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:18px; color:var(--yellow); }
   .hero-foot{ margin-top:14px; font-size:12px; color:var(--green); font-weight:600; position:relative; }
-
+ 
   .section-title{ font-size:13px; font-weight:700; color:var(--cream-dim); margin:22px 0 10px; }
-
+ 
   .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
   .chip{
     background:rgba(255,255,255,0.06); border:1px solid var(--line);
     border-radius:14px 14px 6px 14px; padding:10px 12px; font-size:12px; flex:1; min-width:88px;
   }
   .chip b{ display:block; font-family:'Fraunces',serif; font-size:16px; font-weight:600; margin-top:2px; }
-
+ 
   .tx-list{ display:flex; flex-direction:column; gap:2px; }
   .tx{
     display:flex; justify-content:space-between; align-items:center;
@@ -90,7 +93,7 @@
   .tx-date{ font-size:11px; color:var(--cream-dim); }
   .tx-val.credit{ color:var(--green); font-weight:700; }
   .tx-val.debit{ color:var(--yellow); font-weight:700; }
-
+ 
   .navbar{
     display:flex; justify-content:space-around; margin-top:24px;
     border-top:1px solid var(--line); padding-top:14px;
@@ -98,7 +101,7 @@
   .nav-item{ font-size:11px; color:var(--cream-dim); text-align:center; font-weight:600; }
   .nav-item.on{ color:var(--yellow); }
   .nav-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; margin:0 auto 5px; }
-
+ 
   /* ---------- CAIXA (Painel) ---------- */
   .desk{
     background:var(--acai); border-radius:24px; padding:28px;
@@ -106,7 +109,7 @@
     grid-template-columns:1.1fr 1fr; gap:24px;
   }
   .desk-title{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; margin:0 0 18px; }
-  .search-box{ display:flex; gap:8px; margin-bottom:20px; }
+  .search-box{ display:flex; gap:8px; margin-bottom:8px; }
   .search-box input{
     flex:1; background:rgba(255,255,255,0.06); border:1px solid var(--line);
     border-radius:10px; padding:12px 14px; color:var(--cream); font-size:14px;
@@ -117,7 +120,8 @@
     background:var(--yellow); color:var(--acai); border:none; border-radius:10px;
     padding:0 18px; font-weight:800; font-size:13px; cursor:pointer;
   }
-
+  .status-line{ font-size:12px; color:var(--cream-dim); min-height:16px; margin:0 0 16px 2px; }
+ 
   .client-card{
     background:var(--acai-2); border-radius:18px 18px 8px 18px; padding:18px 20px;
     border:1px solid var(--line); margin-bottom:20px;
@@ -128,8 +132,8 @@
   .client-balance{ text-align:right; }
   .client-balance b{ font-family:'Fraunces',serif; font-size:28px; display:block; font-feature-settings:"tnum"; }
   .client-balance span{ font-size:11px; color:var(--cream-dim); }
-
-  .product-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+ 
+  .product-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
   .product-btn{
     background:rgba(255,255,255,0.05); border:1px solid var(--line);
     border-radius:14px 14px 6px 14px; padding:14px; text-align:left; cursor:pointer;
@@ -138,27 +142,24 @@
   .product-btn:hover{ border-color:var(--green); }
   .product-btn .pname{ font-size:13px; font-weight:700; }
   .product-btn .pcred{ font-size:12px; color:var(--green); margin-top:4px; font-weight:700; }
-
-  .launch-btn{
-    width:100%; background:var(--green); color:var(--acai); border:none;
-    border-radius:12px; padding:15px; font-weight:800; font-size:14px; cursor:pointer;
-  }
-
+ 
+  .feedback-line{ font-size:13px; min-height:20px; margin-bottom:6px; font-weight:600; }
+ 
   .desk-side-title{ font-size:12px; font-weight:700; color:var(--cream-dim); margin-bottom:12px; }
   .desk-tx{ display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line); font-size:13px; }
-
+ 
   @media (max-width:720px){ .desk{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
-
+ 
   <div class="switcher">
     <button class="active" onclick="show('cliente', this)">App do cliente</button>
     <button onclick="show('caixa', this)">Painel do caixa</button>
   </div>
-
+ 
   <div class="stage">
-
+ 
     <div class="view active" id="view-cliente">
       <div class="phone">
         <div class="phone-top">
@@ -174,7 +175,7 @@
           </div>
           <div class="avatar">A</div>
         </div>
-
+ 
         <div class="hero">
           <svg class="hero-dots" width="120" height="90" viewBox="0 0 120 90">
             <circle cx="30" cy="20" r="3" fill="#F2C245" opacity="0.5"/>
@@ -184,33 +185,22 @@
             <circle cx="70" cy="35" r="1.5" fill="#F2C245" opacity="0.4"/>
           </svg>
           <div class="hero-label">Seus créditos</div>
-          <div class="hero-value">128 <span>pts</span></div>
-          <div class="hero-foot">+3 na última visita</div>
+          <div class="hero-value"><span id="clienteSaldoNum">—</span> <span>pts</span></div>
+          <div class="hero-foot" id="clienteHeroFoot">Carregando...</div>
         </div>
-
+ 
         <div class="section-title">Vale a pena saber</div>
         <div class="chip-row">
           <div class="chip">Empada<b>1 pt</b></div>
           <div class="chip">Açaí 500ml<b>2 pts</b></div>
           <div class="chip">Pizza<b>3 pts</b></div>
         </div>
-
+ 
         <div class="section-title">Últimos lançamentos</div>
-        <div class="tx-list">
-          <div class="tx">
-            <div><div class="tx-name">Pizza + Empada</div><div class="tx-date">Hoje, 19:42</div></div>
-            <div class="tx-val credit">+4</div>
-          </div>
-          <div class="tx">
-            <div><div class="tx-name">Resgate — sobremesa</div><div class="tx-date">3 de set.</div></div>
-            <div class="tx-val debit">−6</div>
-          </div>
-          <div class="tx">
-            <div><div class="tx-name">Açaí 500ml</div><div class="tx-date">28 de ago.</div></div>
-            <div class="tx-val credit">+2</div>
-          </div>
+        <div class="tx-list" id="clienteTxList">
+          <div class="tx"><div class="tx-name" style="color:var(--cream-dim)">Carregando extrato...</div></div>
         </div>
-
+ 
         <div class="navbar">
           <div class="nav-item on"><div class="nav-dot"></div>Início</div>
           <div class="nav-item"><div class="nav-dot"></div>Extrato</div>
@@ -218,57 +208,177 @@
         </div>
       </div>
     </div>
-
+ 
     <div class="view" id="view-caixa">
       <div class="desk">
         <div>
           <div class="desk-title">Lançar crédito</div>
           <div class="search-box">
-            <input type="text" placeholder="Buscar por telefone" value="83 99999-8888">
-            <button>Buscar</button>
+            <input type="text" id="telefoneInput" placeholder="Buscar por telefone" value="83999998888">
+            <button onclick="buscarCliente()">Buscar</button>
           </div>
-
+          <div class="status-line" id="caixaStatus"></div>
+ 
           <div class="client-card">
             <div>
-              <div class="client-name">Ana Souza</div>
-              <div class="client-phone">(83) 99999-8888</div>
+              <div class="client-name" id="caixaClienteNome">—</div>
+              <div class="client-phone" id="caixaClienteTelefone">Busque um cliente pelo telefone</div>
             </div>
             <div class="client-balance">
-              <b>128</b>
+              <b id="caixaSaldo">—</b>
               <span>créditos atuais</span>
             </div>
           </div>
-
+ 
           <div class="product-grid">
-            <div class="product-btn"><div class="pname">Empada</div><div class="pcred">+1 crédito</div></div>
-            <div class="product-btn"><div class="pname">Açaí 500ml</div><div class="pcred">+2 créditos</div></div>
-            <div class="product-btn"><div class="pname">Açaí 1L</div><div class="pcred">+3 créditos</div></div>
-            <div class="product-btn"><div class="pname">Pizza</div><div class="pcred">+3 créditos</div></div>
+            <div class="product-btn" onclick="lancarCredito('Empada', 1)"><div class="pname">Empada</div><div class="pcred">+1 crédito</div></div>
+            <div class="product-btn" onclick="lancarCredito('Açaí 500ml', 2)"><div class="pname">Açaí 500ml</div><div class="pcred">+2 créditos</div></div>
+            <div class="product-btn" onclick="lancarCredito('Açaí 1L', 3)"><div class="pname">Açaí 1L</div><div class="pcred">+3 créditos</div></div>
+            <div class="product-btn" onclick="lancarCredito('Pizza', 3)"><div class="pname">Pizza</div><div class="pcred">+3 créditos</div></div>
           </div>
-
-          <button class="launch-btn">Lançar 3 créditos</button>
+          <div class="feedback-line" id="lancamentoFeedback"></div>
         </div>
-
+ 
         <div>
-          <div class="desk-side-title">Últimos lançamentos da loja</div>
-          <div class="desk-tx"><span>Ana Souza</span><span style="color:var(--green); font-weight:700">+3</span></div>
-          <div class="desk-tx"><span>Carlos Lima</span><span style="color:var(--green); font-weight:700">+1</span></div>
-          <div class="desk-tx"><span>Rafaela Dias</span><span style="color:var(--yellow); font-weight:700">−6</span></div>
-          <div class="desk-tx"><span>João Pedro</span><span style="color:var(--green); font-weight:700">+2</span></div>
+          <div class="desk-side-title">Histórico do cliente buscado</div>
+          <div id="deskTxList">
+            <div style="color:var(--cream-dim); font-size:13px;">Busque um cliente pra ver o histórico.</div>
+          </div>
         </div>
       </div>
     </div>
-
+ 
   </div>
-
+ 
 <script>
+// Base da API local. Trocar pela URL de produção quando o backend for hospedado.
+const API_BASE = 'http://127.0.0.1:8000';
+ 
 function show(id, btn){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + id).classList.add('active');
   document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
+ 
+function formatData(iso){
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+ 
+/* ---------------- Painel do caixa ---------------- */
+let caixaCarteiraId = null;
+ 
+async function buscarCliente(){
+  const telefone = document.getElementById('telefoneInput').value.trim();
+  const status = document.getElementById('caixaStatus');
+  status.style.color = 'var(--cream-dim)';
+  status.textContent = 'Buscando...';
+ 
+  try{
+    const res = await fetch(`${API_BASE}/clientes?telefone=${encodeURIComponent(telefone)}`);
+    if(!res.ok){
+      status.style.color = 'var(--yellow)';
+      status.textContent = res.status === 404 ? 'Cliente não encontrado.' : 'Erro ao buscar cliente.';
+      return;
+    }
+    const cliente = await res.json();
+    caixaCarteiraId = cliente.carteira.id;
+    document.getElementById('caixaClienteNome').textContent = cliente.nome;
+    document.getElementById('caixaClienteTelefone').textContent = cliente.telefone;
+    document.getElementById('caixaSaldo').textContent = cliente.carteira.saldo;
+    status.textContent = '';
+    document.getElementById('lancamentoFeedback').textContent = '';
+    carregarHistoricoCaixa(caixaCarteiraId);
+  }catch(e){
+    status.style.color = 'var(--yellow)';
+    status.textContent = `Não consegui falar com a API em ${API_BASE} — ela está rodando?`;
+  }
+}
+ 
+async function lancarCredito(nomeProduto, valor){
+  const feedback = document.getElementById('lancamentoFeedback');
+  if(!caixaCarteiraId){
+    feedback.style.color = 'var(--yellow)';
+    feedback.textContent = 'Busque um cliente antes de lançar crédito.';
+    return;
+  }
+ 
+  try{
+    const res = await fetch(`${API_BASE}/transacoes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ carteira_id: caixaCarteiraId, tipo: 'credito', valor })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      feedback.style.color = 'var(--yellow)';
+      feedback.textContent = data.detail || 'Erro ao lançar crédito.';
+      return;
+    }
+    document.getElementById('caixaSaldo').textContent = data.novo_saldo;
+    feedback.style.color = 'var(--green)';
+    feedback.textContent = `+${valor} lançado (${nomeProduto}). Novo saldo: ${data.novo_saldo}.`;
+    carregarHistoricoCaixa(caixaCarteiraId);
+  }catch(e){
+    feedback.style.color = 'var(--yellow)';
+    feedback.textContent = 'Não consegui falar com a API.';
+  }
+}
+ 
+async function carregarHistoricoCaixa(carteiraId){
+  const container = document.getElementById('deskTxList');
+  try{
+    const res = await fetch(`${API_BASE}/carteira/${carteiraId}`);
+    if(!res.ok) return;
+    const extrato = await res.json();
+    container.innerHTML = extrato.historico.length
+      ? extrato.historico.map(h => `
+          <div class="desk-tx">
+            <span>${h.tipo === 'credito' ? 'Crédito' : 'Débito'} · ${formatData(h.criado_em)}</span>
+            <span style="color:${h.tipo === 'credito' ? 'var(--green)' : 'var(--yellow)'}; font-weight:700">${h.tipo === 'credito' ? '+' : '−'}${h.valor}</span>
+          </div>
+        `).join('')
+      : '<div style="color:var(--cream-dim); font-size:13px;">Sem lançamentos ainda.</div>';
+  }catch(e){ /* já sinalizamos erro de conexão na busca */ }
+}
+ 
+/* ---------------- App do cliente ---------------- */
+// O MVP ainda não tem login/QR (isso fica pra fase seguinte).
+// Por enquanto, usamos o telefone do cliente de teste criado pelo seed.py.
+const TELEFONE_CLIENTE_TESTE = '83999998888';
+ 
+async function carregarSaldoCliente(){
+  try{
+    const resCliente = await fetch(`${API_BASE}/clientes?telefone=${TELEFONE_CLIENTE_TESTE}`);
+    if(!resCliente.ok) throw new Error('cliente não encontrado');
+    const cliente = await resCliente.json();
+    document.getElementById('clienteSaldoNum').textContent = cliente.carteira.saldo;
+ 
+    const resExtrato = await fetch(`${API_BASE}/carteira/${cliente.carteira.id}`);
+    const extrato = await resExtrato.json();
+    const ultimo = extrato.historico[0];
+    document.getElementById('clienteHeroFoot').textContent = ultimo
+      ? `${ultimo.tipo === 'credito' ? '+' : '−'}${ultimo.valor} em ${formatData(ultimo.criado_em)}`
+      : 'Nenhum lançamento ainda';
+ 
+    const list = document.getElementById('clienteTxList');
+    list.innerHTML = extrato.historico.length
+      ? extrato.historico.map(h => `
+          <div class="tx">
+            <div><div class="tx-name">${h.tipo === 'credito' ? 'Crédito' : 'Débito'}</div><div class="tx-date">${formatData(h.criado_em)}</div></div>
+            <div class="tx-val ${h.tipo === 'credito' ? 'credit' : 'debit'}">${h.tipo === 'credito' ? '+' : '−'}${h.valor}</div>
+          </div>
+        `).join('')
+      : '<div class="tx"><div class="tx-name" style="color:var(--cream-dim)">Nenhum lançamento ainda.</div></div>';
+  }catch(e){
+    document.getElementById('clienteHeroFoot').textContent = `API offline em ${API_BASE}`;
+    document.getElementById('clienteSaldoNum').textContent = '—';
+  }
+}
+ 
+carregarSaldoCliente();
 </script>
-
+ 
 </body>
 </html>
+ 
