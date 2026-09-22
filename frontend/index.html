@@ -119,13 +119,16 @@
             </div>
           </div>
 
-          <div class="product-grid">
-            <div class="product-btn" onclick="lancarCredito('Empada', 1)"><div class="pname">Empada</div><div class="pcred">+1 crédito</div></div>
-            <div class="product-btn" onclick="lancarCredito('Açaí 500ml', 2)"><div class="pname">Açaí 500ml</div><div class="pcred">+2 créditos</div></div>
-            <div class="product-btn" onclick="lancarCredito('Açaí 1L', 3)"><div class="pname">Açaí 1L</div><div class="pcred">+3 créditos</div></div>
-            <div class="product-btn" onclick="lancarCredito('Pizza', 3)"><div class="pname">Pizza</div><div class="pcred">+3 créditos</div></div>
+          <div class="product-grid" id="produtoGrid">
+            <div style="color:var(--cream-dim); font-size:13px;">Carregando produtos...</div>
           </div>
           <div class="feedback-line" id="lancamentoFeedback"></div>
+
+          <div class="section-title" style="margin-top:16px;">Resgatar créditos</div>
+          <div class="resgate-row">
+            <input type="number" id="resgateValorInput" placeholder="Qtd." min="1">
+            <button onclick="resgatarCreditos()">Resgatar</button>
+          </div>
         </div>
 
         <div>
@@ -133,6 +136,17 @@
           <div id="deskTxList">
             <div style="color:var(--cream-dim); font-size:13px;">Busque um cliente pra ver o histórico.</div>
           </div>
+        </div>
+
+        <div class="admin-section" id="adminProdutos" style="display:none;">
+          <div class="desk-title" style="font-size:16px;">Gerenciar produtos (admin)</div>
+          <div id="listaProdutosAdmin"></div>
+          <div class="admin-add-row">
+            <input type="text" class="nome" id="novoProdutoNome" placeholder="Nome do produto">
+            <input type="number" class="valor" id="novoProdutoValor" placeholder="Créditos" min="1">
+            <button onclick="adicionarProduto()">Adicionar</button>
+          </div>
+          <div class="feedback-line" id="adminFeedback"></div>
         </div>
       </div>
     </div>

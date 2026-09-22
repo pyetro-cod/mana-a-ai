@@ -14,12 +14,15 @@ function formatData(iso){
 
 /* ================= Caixa: autenticação ================= */
 let caixaToken = localStorage.getItem('manaCaixaToken') || null;
+let caixaPerfil = localStorage.getItem('manaCaixaPerfil') || null;
 let caixaCarteiraId = null;
 
 function atualizarTelaCaixa(){
   const logado = !!caixaToken;
   document.getElementById('caixaLoginBox').style.display = logado ? 'none' : 'grid';
   document.getElementById('caixaPainel').style.display = logado ? 'grid' : 'none';
+  document.getElementById('adminProdutos').style.display = (logado && caixaPerfil === 'admin') ? 'block' : 'none';
+  if(logado) carregarProdutos();
 }
 
 async function loginCaixa(){
@@ -42,7 +45,9 @@ async function loginCaixa(){
       return;
     }
     caixaToken = data.token;
+    caixaPerfil = data.perfil;
     localStorage.setItem('manaCaixaToken', caixaToken);
+    localStorage.setItem('manaCaixaPerfil', caixaPerfil);
     status.textContent = '';
     atualizarTelaCaixa();
   }catch(e){
@@ -53,8 +58,10 @@ async function loginCaixa(){
 
 function logoutCaixa(){
   caixaToken = null;
+  caixaPerfil = null;
   caixaCarteiraId = null;
   localStorage.removeItem('manaCaixaToken');
+  localStorage.removeItem('manaCaixaPerfil');
   document.getElementById('caixaClienteNome').textContent = '—';
   document.getElementById('caixaClienteTelefone').textContent = 'Busque um cliente pelo telefone';
   document.getElementById('caixaSaldo').textContent = '—';
@@ -153,11 +160,16 @@ async function cadastrarCliente(){
   }
 }
 
-async function lancarCredito(nomeProduto, valor){
+async function lancarTransacao(tipo, valor, rotulo){
   const feedback = document.getElementById('lancamentoFeedback');
   if(!caixaCarteiraId){
     feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Busque um cliente antes de lançar crédito.';
+    feedback.textContent = 'Busque um cliente antes de lançar.';
+    return;
+  }
+  if(!valor || valor <= 0){
+    feedback.style.color = 'var(--yellow)';
+    feedback.textContent = 'Informe uma quantidade válida.';
     return;
   }
 
@@ -165,7 +177,7 @@ async function lancarCredito(nomeProduto, valor){
     const res = await fetch(`${API_BASE}/transacoes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ carteira_id: caixaCarteiraId, tipo: 'credito', valor })
+      body: JSON.stringify({ carteira_id: caixaCarteiraId, tipo, valor })
     });
     if(res.status === 401){
       feedback.style.color = 'var(--yellow)';
@@ -176,13 +188,115 @@ async function lancarCredito(nomeProduto, valor){
     const data = await res.json();
     if(!res.ok){
       feedback.style.color = 'var(--yellow)';
-      feedback.textContent = data.detail || 'Erro ao lançar crédito.';
+      feedback.textContent = data.detail || 'Erro ao lançar.';
       return;
     }
     document.getElementById('caixaSaldo').textContent = data.novo_saldo;
-    feedback.style.color = 'var(--green)';
-    feedback.textContent = `+${valor} lançado (${nomeProduto}). Novo saldo: ${data.novo_saldo}.`;
+    const sinal = tipo === 'credito' ? '+' : '−';
+    feedback.style.color = tipo === 'credito' ? 'var(--green)' : 'var(--yellow)';
+    feedback.textContent = `${sinal}${valor} (${rotulo}). Novo saldo: ${data.novo_saldo}.`;
     carregarHistoricoCaixa(caixaCarteiraId);
+  }catch(e){
+    feedback.style.color = 'var(--yellow)';
+    feedback.textContent = 'Não consegui falar com a API.';
+  }
+}
+
+function resgatarCreditos(){
+  const valor = parseInt(document.getElementById('resgateValorInput').value, 10);
+  lancarTransacao('debito', valor, 'Resgate');
+  document.getElementById('resgateValorInput').value = '';
+}
+
+/* ================= Produtos (dinâmico) ================= */
+async function carregarProdutos(){
+  const grid = document.getElementById('produtoGrid');
+  try{
+    const res = await fetch(`${API_BASE}/produtos`, { headers: authHeaders() });
+    if(res.status === 401){ logoutCaixa(); return; }
+    if(!res.ok) throw new Error('erro ao carregar produtos');
+    const produtos = await res.json();
+
+    grid.innerHTML = produtos.length
+      ? produtos.map(p => `
+          <div class="product-btn" onclick="lancarTransacao('credito', ${p.valor_creditos}, '${p.nome.replace(/'/g, "\\'")}')">
+            <div class="pname">${p.nome}</div>
+            <div class="pcred">+${p.valor_creditos} crédito${p.valor_creditos > 1 ? 's' : ''}</div>
+          </div>
+        `).join('')
+      : '<div style="color:var(--cream-dim); font-size:13px;">Nenhum produto cadastrado ainda.</div>';
+
+    if(caixaPerfil === 'admin') renderAdminProdutos(produtos);
+  }catch(e){
+    grid.innerHTML = '<div style="color:var(--yellow); font-size:13px;">Não consegui carregar os produtos.</div>';
+  }
+}
+
+function renderAdminProdutos(produtos){
+  const lista = document.getElementById('listaProdutosAdmin');
+  lista.innerHTML = produtos.map(p => `
+    <div class="admin-produto-row">
+      <input class="nome" id="admNome-${p.id}" value="${p.nome}">
+      <input class="valor" type="number" min="1" id="admValor-${p.id}" value="${p.valor_creditos}">
+      <button onclick="salvarProduto('${p.id}')">Salvar</button>
+    </div>
+  `).join('');
+}
+
+async function salvarProduto(id){
+  const feedback = document.getElementById('adminFeedback');
+  const nome = document.getElementById(`admNome-${id}`).value.trim();
+  const valor = parseInt(document.getElementById(`admValor-${id}`).value, 10);
+
+  try{
+    const res = await fetch(`${API_BASE}/produtos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ nome, valor_creditos: valor })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      feedback.style.color = 'var(--yellow)';
+      feedback.textContent = data.detail || 'Erro ao salvar produto.';
+      return;
+    }
+    feedback.style.color = 'var(--green)';
+    feedback.textContent = `"${data.nome}" atualizado.`;
+    carregarProdutos();
+  }catch(e){
+    feedback.style.color = 'var(--yellow)';
+    feedback.textContent = 'Não consegui falar com a API.';
+  }
+}
+
+async function adicionarProduto(){
+  const feedback = document.getElementById('adminFeedback');
+  const nome = document.getElementById('novoProdutoNome').value.trim();
+  const valor = parseInt(document.getElementById('novoProdutoValor').value, 10);
+
+  if(!nome || !valor || valor <= 0){
+    feedback.style.color = 'var(--yellow)';
+    feedback.textContent = 'Preencha nome e quantidade de créditos.';
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API_BASE}/produtos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ nome, valor_creditos: valor })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      feedback.style.color = 'var(--yellow)';
+      feedback.textContent = data.detail || 'Erro ao criar produto.';
+      return;
+    }
+    document.getElementById('novoProdutoNome').value = '';
+    document.getElementById('novoProdutoValor').value = '';
+    feedback.style.color = 'var(--green)';
+    feedback.textContent = `"${data.nome}" adicionado.`;
+    carregarProdutos();
   }catch(e){
     feedback.style.color = 'var(--yellow)';
     feedback.textContent = 'Não consegui falar com a API.';

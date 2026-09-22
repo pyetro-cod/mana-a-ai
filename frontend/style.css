@@ -150,3 +150,39 @@
   }
   .logout-btn:hover{ border-color:var(--yellow); color:var(--yellow); }
   .avatar{ cursor:pointer; }
+
+  /* ---------- Resgate e admin ---------- */
+  .resgate-row{ display:flex; gap:8px; }
+  .resgate-row input{
+    width:90px; background:rgba(255,255,255,0.06); border:1px solid var(--line);
+    border-radius:10px; padding:10px 12px; color:var(--cream); font-family:'Manrope',sans-serif; font-size:13px;
+  }
+  .resgate-row button{
+    background:transparent; border:1px solid var(--yellow); color:var(--yellow);
+    border-radius:10px; padding:0 14px; font-weight:700; font-size:12px; cursor:pointer;
+  }
+  .resgate-row button:hover{ background:var(--yellow); color:var(--acai); }
+
+  .admin-section{ grid-column:1/-1; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+  .admin-produto-row{ display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); }
+  .admin-produto-row input{
+    background:rgba(255,255,255,0.06); border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; color:var(--cream); font-family:'Manrope',sans-serif; font-size:13px;
+  }
+  .admin-produto-row input.nome{ flex:1; }
+  .admin-produto-row input.valor{ width:70px; }
+  .admin-produto-row button{
+    background:var(--green); color:var(--acai); border:none; border-radius:8px;
+    padding:8px 12px; font-weight:700; font-size:12px; cursor:pointer;
+  }
+  .admin-add-row{ display:flex; gap:8px; margin-top:14px; }
+  .admin-add-row input{
+    background:rgba(255,255,255,0.06); border:1px solid var(--line); border-radius:8px;
+    padding:10px 12px; color:var(--cream); font-family:'Manrope',sans-serif; font-size:13px;
+  }
+  .admin-add-row input.nome{ flex:1; }
+  .admin-add-row input.valor{ width:80px; }
+  .admin-add-row button{
+    background:var(--yellow); color:var(--acai); border:none; border-radius:8px;
+    padding:0 16px; font-weight:800; font-size:13px; cursor:pointer;
+  }

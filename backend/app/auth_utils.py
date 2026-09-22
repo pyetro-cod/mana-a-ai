@@ -24,3 +24,10 @@ def get_caixa_atual(authorization: str = Header(None), db: Session = Depends(get
         raise HTTPException(status_code=401, detail="Não autorizado")
 
     return usuario
+
+
+def get_admin_atual(usuario_atual: models.Usuario = Depends(get_caixa_atual)) -> models.Usuario:
+    """Mesma validação de token, mas exige perfil admin — usado na gestão de catálogo."""
+    if usuario_atual.perfil != "admin":
+        raise HTTPException(status_code=403, detail="Ação restrita a administradores")
+    return usuario_atual

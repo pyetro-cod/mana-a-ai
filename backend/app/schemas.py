@@ -4,6 +4,25 @@ from typing import Optional, Literal, List
 from pydantic import BaseModel, Field, field_validator
 
 
+class ProdutoCreate(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=80)
+    valor_creditos: int = Field(..., gt=0)
+
+
+class ProdutoUpdate(BaseModel):
+    nome: Optional[str] = Field(None, min_length=2, max_length=80)
+    valor_creditos: Optional[int] = Field(None, gt=0)
+
+
+class ProdutoOut(BaseModel):
+    id: str
+    nome: str
+    valor_creditos: int
+
+    class Config:
+        from_attributes = True
+
+
 class ClienteCreate(BaseModel):
     nome: str = Field(..., min_length=2, max_length=120)
     telefone: str = Field(..., min_length=10, max_length=11)
