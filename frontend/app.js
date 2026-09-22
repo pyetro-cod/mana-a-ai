@@ -66,9 +66,13 @@ function authHeaders(){
 }
 
 /* ================= Painel do caixa ================= */
+let telefoneBuscado = null;
+
 async function buscarCliente(){
   const telefone = document.getElementById('telefoneInput').value.trim();
   const status = document.getElementById('caixaStatus');
+  const cadastroBox = document.getElementById('caixaCadastroBox');
+  cadastroBox.style.display = 'none';
   status.style.color = 'var(--cream-dim)';
   status.textContent = 'Buscando...';
 
@@ -82,9 +86,16 @@ async function buscarCliente(){
       logoutCaixa();
       return;
     }
+    if(res.status === 404){
+      telefoneBuscado = telefone;
+      status.style.color = 'var(--yellow)';
+      status.textContent = 'Cliente não encontrado — cadastrar novo?';
+      cadastroBox.style.display = 'block';
+      return;
+    }
     if(!res.ok){
       status.style.color = 'var(--yellow)';
-      status.textContent = res.status === 404 ? 'Cliente não encontrado.' : 'Erro ao buscar cliente.';
+      status.textContent = 'Erro ao buscar cliente.';
       return;
     }
     const cliente = await res.json();
@@ -98,6 +109,47 @@ async function buscarCliente(){
   }catch(e){
     status.style.color = 'var(--yellow)';
     status.textContent = `Não consegui falar com a API em ${API_BASE} — ela está rodando?`;
+  }
+}
+
+async function cadastrarCliente(){
+  const nome = document.getElementById('cadastroNomeInput').value.trim();
+  const status = document.getElementById('caixaStatus');
+
+  if(!nome){
+    status.style.color = 'var(--yellow)';
+    status.textContent = 'Digite o nome do cliente.';
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API_BASE}/clientes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ nome, telefone: telefoneBuscado })
+    });
+    if(res.status === 401){
+      logoutCaixa();
+      return;
+    }
+    const data = await res.json();
+    if(!res.ok){
+      status.style.color = 'var(--yellow)';
+      status.textContent = data.detail || 'Erro ao cadastrar cliente.';
+      return;
+    }
+    document.getElementById('caixaCadastroBox').style.display = 'none';
+    document.getElementById('cadastroNomeInput').value = '';
+    caixaCarteiraId = data.carteira.id;
+    document.getElementById('caixaClienteNome').textContent = data.nome;
+    document.getElementById('caixaClienteTelefone').textContent = data.telefone;
+    document.getElementById('caixaSaldo').textContent = data.carteira.saldo;
+    status.style.color = 'var(--green)';
+    status.textContent = 'Cliente cadastrado com sucesso.';
+    carregarHistoricoCaixa(caixaCarteiraId);
+  }catch(e){
+    status.style.color = 'var(--yellow)';
+    status.textContent = 'Não consegui falar com a API.';
   }
 }
 

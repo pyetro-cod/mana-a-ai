@@ -45,3 +45,25 @@ def buscar_cliente(
         raise HTTPException(status_code=404, detail="Cliente sem carteira associada")
 
     return usuario
+
+
+@router.post("", response_model=schemas.ClienteOut, status_code=201)
+def cadastrar_cliente(
+    payload: schemas.ClienteCreate,
+    db: Session = Depends(get_db),
+    _usuario_atual: models.Usuario = Depends(get_caixa_atual),
+):
+    existente = db.query(models.Usuario).filter(models.Usuario.telefone == payload.telefone).first()
+    if existente:
+        raise HTTPException(status_code=409, detail="Já existe um cadastro com esse telefone")
+
+    usuario = models.Usuario(nome=payload.nome, telefone=payload.telefone, perfil="cliente")
+    db.add(usuario)
+    db.flush()  # garante usuario.id antes de criar a carteira
+
+    carteira = models.Carteira(usuario_id=usuario.id, saldo=0)
+    db.add(carteira)
+    db.commit()
+    db.refresh(usuario)
+
+    return usuario

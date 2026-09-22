@@ -4,6 +4,11 @@ from typing import Optional, Literal, List
 from pydantic import BaseModel, Field, field_validator
 
 
+class ClienteCreate(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=120)
+    telefone: str = Field(..., min_length=10, max_length=11)
+
+
 class LoginRequest(BaseModel):
     telefone: str = Field(..., min_length=10, max_length=11)
     senha: str = Field(..., min_length=8)
