@@ -1,0 +1,187 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maná: programa de fidelidade com créditos digitais</title><style>
+:root{--ink:#1b1f2a;--muted:#5b6475;--line:#d5dae3;--card:#f3f5f8;--amber:#d9a521;--amber-soft:#fff3cf;
+--font:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;background:#e9ecf1;font-family:var(--font);color:var(--ink);font-size:10.5px;line-height:1.35}
+.page{width:210mm;min-height:297mm;margin:16px auto;padding:13mm 12mm 17mm;background:#fff;position:relative;
+box-shadow:0 1px 8px rgba(0,0,0,.18)}
+.eyebrow{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+h1{font-size:19px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0 0 14px;color:var(--muted);font-size:10.5px}
+.note{margin:12px 0 0;color:var(--muted);font-size:9px;border-top:1px solid var(--line);padding-top:6px}
+.pf{position:absolute;left:12mm;right:12mm;bottom:8mm;display:flex;justify-content:space-between;font-size:8.5px;color:#98a0b0}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;margin-top:14px;padding:6px 9px;border:1px solid var(--line);
+border-radius:6px;background:#fafbfc;font-size:9px;color:var(--muted)}
+.legend b{color:var(--ink)}
+.lg{display:inline-flex;align-items:center;gap:5px}
+.sw{display:inline-block;width:16px;height:9px}
+.sw.line{height:0;border-top:1.6px solid #5b6475}.sw.dashed{height:0;border-top:1.6px dashed #c4601a}
+.sw.money{height:0;border-top:2.4px solid #2e7d4f}
+.sw.mod{border:1.4px solid #1f7a78;background:#e4f3f2}.sw.core{border:1.6px solid #2a4fa8;background:#d3e0f6}
+.sw.ext{border:1.4px solid #2a4fa8;background:#eaf0fb}.sw.comp{border:1.4px solid #b3322b;background:#fdeeee}
+.sw.stat{background:#2a4fa8;height:9px}
+/* cards */
+.card{border:1.2px solid var(--c);background:var(--cs);border-radius:4px;padding:6px 8px;margin:0 0 8px}
+.card:last-child{margin-bottom:0}
+.card b{display:block;font-size:10.5px;margin-bottom:2px}
+.card p{margin:0;color:#3b4354;font-size:9.5px}
+.card.core{background:color-mix(in srgb,var(--c) 17%,#fff);border-width:1.8px}
+.card.dashed{border-style:dashed}
+.card.slim{margin:0;flex:1}
+.tag{margin-top:5px;padding:3px 6px;background:var(--amber-soft);border:1px dashed var(--amber);border-radius:3px;font-size:8.8px;color:#6b4a00}
+.row{display:flex;gap:8px}
+/* summary */
+.lead{font-size:13px;line-height:1.45;margin:0 0 14px;color:#232a3b}
+.kpis{display:flex;gap:10px;margin-bottom:14px}
+.kpi{flex:1;border:1px solid var(--line);border-radius:6px;padding:9px 10px;background:var(--card)}
+.kpi strong{display:block;font-size:17px;color:#2a4fa8}.kpi span{color:var(--muted);font-size:9.5px}
+.blocks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.blk{border:1px solid var(--line);border-top:3px solid var(--c);border-radius:4px;padding:8px 10px}
+.blk h3,.cv h3{margin:0 0 5px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--c)}
+ul{margin:0;padding-left:14px}li{margin:0 0 2.5px}
+/* canvas */
+.canvas{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(2,minmax(150px,auto)) minmax(110px,auto);gap:6px}
+.cv{border:1px solid var(--line);border-top:3px solid var(--c);border-radius:4px;padding:8px 9px;background:#fff}
+.cv-p{grid-column:1/3;grid-row:1/3}.cv-a{grid-column:3/5;grid-row:1}.cv-r{grid-column:3/5;grid-row:2}
+.cv-v{grid-column:5/7;grid-row:1/3;background:var(--cs)}.cv-l{grid-column:7/9;grid-row:1}.cv-c{grid-column:7/9;grid-row:2}
+.cv-s{grid-column:9/11;grid-row:1/3}.cv-k{grid-column:1/6;grid-row:3}.cv-f{grid-column:6/11;grid-row:3}
+/* connectors */
+.dg{position:relative}
+svg.ov{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:5}
+svg.ov .lbl{font:600 8.5px var(--font);fill:#3b4354;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+/* ecosystem */
+.eco-cols{display:grid;grid-template-columns:1fr .85fr 1fr;gap:70px;align-items:stretch}
+.eco-mid{display:flex;align-items:center}
+.center{width:100%;border:1.8px solid var(--c);background:color-mix(in srgb,var(--c) 14%,#fff);border-radius:5px;padding:12px 12px}
+.center b{display:block;font-size:13px;margin-bottom:6px}.center ul{font-size:9.5px;color:#3b4354}
+.grp{border:1px solid var(--line);border-radius:5px;margin-bottom:12px;overflow:hidden;background:#fff}
+.grp-h{background:var(--c);color:#fff;font-weight:700;font-size:9.5px;padding:4px 8px}
+.grp-b{padding:8px}.grp-row .grp-b{display:flex;gap:8px}.grp-row .card{flex:1;margin:0}
+.eco-bottom{margin-top:16px}
+/* architecture */
+.band{border:1px solid var(--line);border-radius:4px;background:#fff}
+.band-h{background:var(--c);color:#fff;font-weight:700;font-size:9.5px;padding:4px 8px}
+.band-b{padding:8px}
+.vsep{height:12px;margin:0 auto;width:1px;background:#8a93a6;position:relative}
+.arch-cols{display:grid;grid-template-columns:1.25fr 1fr;gap:64px;margin:0}
+.arch-l .card,.arch-r .card{margin-bottom:10px}
+/* roadmap */
+.roadmap{display:flex;flex-direction:column}
+.ph-row{display:grid;grid-template-columns:190px 1fr;gap:14px}
+.ph{background:#2a4fa8;color:#fff;padding:12px 14px 30px;clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);display:flex;flex-direction:column;justify-content:center}
+.ph small{font-size:8.5px;letter-spacing:.06em;opacity:.85}.ph b{font-size:12.5px;margin-top:3px}
+.ph-card{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:11px 14px;display:flex;align-items:center}
+.ph-card ul{list-style:square;color:#2a4fa8}.ph-card li{color:var(--ink);font-size:10px}
+.ph-exit{display:grid;grid-template-columns:190px 1fr;gap:14px;align-items:center;padding:10px 0}
+.ex-l{display:flex;align-items:center;gap:8px;justify-content:center;color:#c4601a;font-size:9px}
+.dia{width:15px;height:15px;border:1.5px solid #c4601a;transform:rotate(45deg);display:inline-block;background:#fff}
+.ex-r{font-size:9.8px;color:#3b4354}
+/* gantt */
+.gsc{margin-bottom:22px}
+.gsc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;color:var(--c)}
+.gsc-h b{font-size:11.5px}.gsc-h span{font-weight:700;font-size:10px}
+.gantt{display:grid;grid-template-columns:150px 1fr;margin-top:18px}
+.g-labs{padding-top:0}.g-lab{height:24px;line-height:24px;text-align:right;padding-right:9px;font-size:9.5px}
+.g-plot{position:relative;border-left:1px solid #98a0b0}
+.g-row{height:24px;position:relative}
+.gl{position:absolute;top:0;bottom:22px;width:0;border-left:1px solid #e4e8ef}
+.g-band{position:absolute;top:0;bottom:22px;background:rgba(31,122,120,.14);border-left:1px solid rgba(31,122,120,.3);border-right:1px solid rgba(31,122,120,.3)}
+.g-band span{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:700;font-size:8.5px;color:#1f7a78}
+.bar{position:absolute;top:5px;height:14px;border-radius:2px}
+.bar.solid{background:var(--c)}.bar.dashed{background:var(--cs);border:1.4px dashed var(--c)}
+.wh{position:absolute;top:11px;height:0;border-top:1.4px solid #1b1f2a}
+.g-val{position:absolute;top:5px;margin-left:5px;font-size:9px;font-weight:700;color:var(--c);white-space:nowrap;line-height:14px}
+.g-val em{font-weight:400;color:var(--muted);font-style:normal}
+.g-axis{position:relative;height:22px;border-top:1px solid #98a0b0}
+.g-axis span{position:absolute;top:3px;transform:translateX(-50%);font-size:8.5px;color:var(--muted)}
+.g-unit{margin:0 0 0 150px;text-align:center;font-size:9px;color:var(--muted)}
+/* swimlane */
+.sl{display:grid;gap:0;align-items:stretch}
+.sl-h{background:var(--c);color:#fff;font-weight:700;font-size:9.5px;padding:6px 8px;display:flex;align-items:center;justify-content:center;text-align:center}
+.sl-bg{border-left:1px solid var(--line);background:#fcfcfd}
+.sl-cell{padding:10px 14px;display:flex;gap:6px;align-items:center;justify-content:center;z-index:1}
+.sl-cell .card{margin:0;flex:1;text-align:center}
+.st-cell{display:flex;align-items:center;gap:6px;padding:4px 6px 4px 0;font-size:9px;color:#3b4354;border-top:1px dotted var(--line)}
+.st-code{background:#2a4fa8;color:#fff;font-weight:700;border-radius:2px;padding:2px 5px;font-size:9px}
+/* assumptions */
+.as{width:100%;border-collapse:collapse;font-size:10px}
+.as th{text-align:left;background:#1d2b4a;color:#fff;padding:6px 8px;font-size:9.5px}
+.as td{border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:top}
+.bd{display:inline-block;border-radius:10px;padding:2px 8px;font-size:8.8px;font-weight:700;white-space:nowrap}
+.bd-dado{background:#eaf0fb;color:#2a4fa8}.bd-premissa{background:#fdf0e3;color:#c4601a}
+.bd-estimativa{background:#fff3cf;color:#8a6200}.bd-risco{background:#fdeeee;color:#b3322b}
+.bd-pergunta{background:#f0ebf8;color:#5b3d9a}
+@page{size:A4;margin:0}
+@media print{body{background:#fff}.page{margin:0;box-shadow:none;break-after:page;height:297mm;overflow:hidden}}
+</style></head><body><section class="page"><div class="eyebrow">Maná (ex-Maná Açaí), João Pessoa · Modelo de acompanhamento do projeto mana-acai · 2026-10</div><h1>Visão geral do modelo</h1><p class="sub">Programa de créditos que o caixa lança a cada compra e o cliente acompanha pelo celular, para testar se isso faz o cliente voltar</p><div class="body"><p class="lead">A cada compra o caixa lança créditos na carteira do cliente, identificado pelo telefone; o cliente consulta o saldo num app web (PWA) e troca os créditos na loja. O MVP existe para responder uma pergunta: crédito digital aumenta o retorno do cliente?</p><div class="kpis"><div class="kpi"><strong>3 perfis</strong><span>cliente, caixa e admin (dado)</span></div><div class="kpi"><strong>4 commits</strong><span>do painel do caixa aguardando merge na develop</span></div><div class="kpi"><strong>30 dias</strong><span>janela de retorno a medir no piloto (proposta)</span></div><div class="kpi"><strong>3 a 4 semanas</strong><span>duração do piloto na loja (proposta)</span></div></div><div class="blocks"><div class="blk" style="--c:#b3322b;--cs:#fdeeee"><h3>Problema</h3><ul><li>Não há motivo registrado para o cliente voltar</li><li>A loja não conhece a frequência de cada cliente</li><li>Sem dado para decidir se fidelidade vale o custo</li></ul></div><div class="blk" style="--c:#2a4fa8;--cs:#eaf0fb"><h3>Proposta</h3><ul><li>Créditos por produto, lançados no caixa</li><li>Saldo e histórico no celular do cliente</li><li>Resgate de créditos no balcão</li></ul></div><div class="blk" style="--c:#c4601a;--cs:#fdf0e3"><h3>Estado atual</h3><ul><li>Painel do caixa, cadastro, catálogo e resgate prontos</li><li>Login provisório, sem testes e sem deploy</li><li>Extrato do cliente acessível só com o telefone</li></ul></div><div class="blk" style="--c:#5b6475;--cs:#f1f3f6"><h3>Fora do escopo do MVP</h3><ul><li>QR code na compra</li><li>Rede com vários estabelecimentos</li><li>Aplicativo nativo</li></ul></div></div></div><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>1 / 7</span></div></section><section class="page"><h1>Modelo de negócio em um quadro</h1><p class="sub">Os nove blocos do canvas preenchidos com o que existe hoje e o que está planejado</p><div class="body"><div class="canvas"><div class="cv cv-p" style="--c:#1d2b4a;--cs:#e8ebf2"><h3>Parcerias-chave</h3><ul><li>Maná (estabelecimento)</li><li>Provedor de WhatsApp/SMS (planejado)</li><li>Hospedagem e banco de dados (planejado)</li></ul></div><div class="cv cv-a" style="--c:#1d2b4a;--cs:#e8ebf2"><h3>Atividades-chave</h3><ul><li>Lançar créditos e resgates no caixa</li><li>Manter o catálogo de produtos</li><li>Acompanhar a métrica de retorno</li></ul></div><div class="cv cv-r" style="--c:#1d2b4a;--cs:#e8ebf2"><h3>Recursos-chave</h3><ul><li>API, painel do caixa e PWA</li><li>Equipe do caixa treinada</li><li>Base de clientes por telefone</li></ul></div><div class="cv cv-v" style="--c:#2a4fa8;--cs:#eaf0fb"><h3>Proposta de valor</h3><ul><li>Cliente: créditos a cada compra, trocáveis na loja</li><li>Loja: motivo para o cliente voltar</li><li>Loja: base própria de clientes e frequência</li></ul></div><div class="cv cv-l" style="--c:#1d2b4a;--cs:#e8ebf2"><h3>Relacionamento</h3><ul><li>Atendimento no balcão</li><li>App para consultar saldo e histórico</li></ul></div><div class="cv cv-c" style="--c:#1d2b4a;--cs:#e8ebf2"><h3>Canais</h3><ul><li>Caixa da loja</li><li>PWA no celular do cliente</li></ul></div><div class="cv cv-s" style="--c:#1d2b4a;--cs:#e8ebf2"><h3>Segmentos de clientes</h3><ul><li>Clientes recorrentes do Maná em João Pessoa</li></ul></div><div class="cv cv-k" style="--c:#5b6475;--cs:#f1f3f6"><h3>Estrutura de custos</h3><ul><li>Desenvolvimento</li><li>Hospedagem e banco</li><li>Mensagens de código (OTP)</li><li>Produtos dados no resgate</li></ul></div><div class="cv cv-f" style="--c:#2e7d4f;--cs:#e6f4ec"><h3>Fontes de receita</h3><ul><li>Mais visitas e recompra (a medir no piloto)</li><li>Cliente não paga pelo programa</li><li>Modelo comercial com o Maná a definir</li></ul></div></div></div><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>2 / 7</span></div></section><section class="page"><h1>Ecossistema da operação</h1><p class="sub">Quem participa, por onde passa o dado e por onde passa o dinheiro</p><div class="body"><div class="dg eco" data-links="[{&quot;from&quot;: &quot;g-loja&quot;, &quot;to&quot;: &quot;center&quot;, &quot;label&quot;: &quot;créditos, resgates&quot;, &quot;both&quot;: true}, {&quot;from&quot;: &quot;cliente&quot;, &quot;to&quot;: &quot;center&quot;, &quot;label&quot;: &quot;consulta saldo&quot;}, {&quot;from&quot;: &quot;center&quot;, &quot;to&quot;: &quot;otp&quot;, &quot;label&quot;: &quot;código&quot;, &quot;kind&quot;: &quot;manual&quot;}, {&quot;from&quot;: &quot;center&quot;, &quot;to&quot;: &quot;banco&quot;, &quot;label&quot;: &quot;dados&quot;, &quot;both&quot;: true}, {&quot;from&quot;: &quot;cliente&quot;, &quot;to&quot;: &quot;caixa&quot;, &quot;label&quot;: &quot;paga a compra&quot;, &quot;kind&quot;: &quot;money&quot;, &quot;route&quot;: &quot;outer-left&quot;}]"><div class="eco-cols"><div class="eco-side"><div class="grp" style="--c:#1d2b4a;--cs:#e8ebf2" data-id="g-loja"><div class="grp-h">1 · Operação da loja</div><div class="grp-b"><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="caixa"><b>Operador de caixa</b><p>busca cliente, lança crédito e resgate</p></div><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="admin"><b>Administrador</b><p>define os créditos de cada produto</p></div></div></div><div class="grp" style="--c:#1f7a78;--cs:#e4f3f2" data-id="g-cliente"><div class="grp-h">2 · Clientes</div><div class="grp-b"><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="cliente"><b>Cliente do Maná</b><p>compra, informa o telefone e consulta o saldo</p></div></div></div></div><div class="eco-mid"><div class="center" data-id="center" style="--c:#2a4fa8;--cs:#eaf0fb"><b>Sistema de fidelidade</b><ul><li>login e perfis</li><li>cadastro de clientes</li><li>catálogo de produtos</li><li>carteira e histórico (ledger)</li><li>painel do caixa</li><li>app do cliente (PWA)</li></ul></div></div><div class="eco-side"><div class="grp" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="g-ext"><div class="grp-h">3 · Serviços externos</div><div class="grp-b"><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="otp"><b>WhatsApp/SMS</b><p>envia código de acesso ao cliente</p><div class="tag"><b>ainda não existe:</b> planejado para a fase 3</div></div><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="banco"><b>Banco e hospedagem</b><p>SQLite local hoje; Postgres/Supabase depois</p></div></div></div></div></div><div class="eco-bottom"><div class="grp grp-row" style="--c:#5b3d9a;--cs:#f0ebf8" data-id="g-reg"><div class="grp-h">4 · Conformidade</div><div class="grp-b"><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb"><b>LGPD</b><p>nome, telefone e histórico de compras são dados pessoais</p></div></div></div></div></div></div><div class="legend"><b>Legenda</b><span class="lg"><i class="sw line"></i>dado / documento</span><span class="lg"><i class="sw money"></i>dinheiro</span><span class="lg"><i class="sw dashed"></i>operação manual</span></div><p class="note">O dinheiro da compra não passa pelo sistema: ele só registra créditos. Seta tracejada indica integração ainda não construída.</p><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>3 / 7</span></div></section><section class="page"><h1>Arquitetura lógica do sistema</h1><p class="sub">Quem acessa, que módulos existem na API e do que eles dependem</p><div class="body"><div class="band" style="--c:#2a4fa8;--cs:#eaf0fb"><div class="band-h">1 · Acesso por papel</div><div class="band-b"><div class="row"><div class="card slim" style="--c:#2a4fa8;--cs:#eaf0fb"><b>Cliente</b><p>vê o próprio saldo e histórico</p></div><div class="card slim" style="--c:#2a4fa8;--cs:#eaf0fb"><b>Operador de caixa</b><p>busca, cadastra, lança crédito e resgate</p></div><div class="card slim" style="--c:#2a4fa8;--cs:#eaf0fb"><b>Administrador</b><p>tudo do caixa e gestão do catálogo</p></div></div></div></div><div class="vsep"></div><div class="band" style="--c:#1d2b4a;--cs:#e8ebf2"><div class="band-h">2 · Controle de acesso</div><div class="band-b"><div class="card" style="--c:#b3322b;--cs:#fdeeee"><b>Login por perfil (hoje com token provisório)</b><p>caixa e admin entram com senha; cliente só informa o telefone. JWT na fase 2 e código por WhatsApp/SMS na fase 3</p></div></div></div><div class="vsep"></div><div class="dg arch-cols" data-links="[{&quot;from&quot;: &quot;m-ledger&quot;, &quot;to&quot;: &quot;x-db&quot;}, {&quot;from&quot;: &quot;m-auth&quot;, &quot;to&quot;: &quot;x-otp&quot;, &quot;kind&quot;: &quot;manual&quot;}]"><div class="arch-l"><div class="band" style="--c:#1d2b4a;--cs:#e8ebf2"><div class="band-h">3 · Módulos da API (FastAPI)</div><div class="band-b"><div class="card" style="--c:#1f7a78;--cs:#e4f3f2" data-id="m-auth"><b>Autenticação e perfis</b><p>login de caixa e admin; checagem de perfil por rota</p></div><div class="card" style="--c:#1f7a78;--cs:#e4f3f2" data-id="m-cli"><b>Cadastro de clientes</b><p>busca e cadastro pelo telefone</p></div><div class="card" style="--c:#1f7a78;--cs:#e4f3f2" data-id="m-cat"><b>Catálogo de produtos</b><p>créditos por produto, editado pelo admin</p></div><div class="card core" style="--c:#1f7a78;--cs:#e4f3f2" data-id="m-ledger"><b>Carteira e ledger</b><p>saldo e transação gravados juntos, com trava na carteira; bloqueia saldo negativo</p></div><div class="card" style="--c:#1f7a78;--cs:#e4f3f2" data-id="m-ext"><b>Extrato do cliente</b><p>saldo e histórico exibidos no PWA</p></div></div></div></div><div class="arch-r"><div class="band" style="--c:#2a4fa8;--cs:#eaf0fb"><div class="band-h">4 · Dependências externas</div><div class="band-b"><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="x-db"><b>Banco de dados</b><p>SQLite hoje; Postgres/Supabase com migrations (Alembic) na fase 5</p></div><div class="card dashed" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="x-otp"><b>Provedor WhatsApp/SMS</b><p>código de acesso do cliente</p><div class="tag"><b>ainda não existe:</b> cliente entra só com o telefone no MVP</div></div><div class="card" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="x-host"><b>Hospedagem (Docker)</b><p>API e front publicados na fase 5</p></div></div></div></div></div><div class="vsep"></div><div class="band" style="--c:#5b3d9a;--cs:#f0ebf8"><div class="band-h">5 · Auditoria e LGPD: transversal a todos os módulos</div><div class="band-b"><div class="card" style="--c:#b3322b;--cs:#fdeeee"><b>Trilha de auditoria e proteção de dados</b><p>registrar qual operador fez cada lançamento e qual produto gerou o crédito; estorno em vez de débito manual; extrato visível só para o dono da carteira</p></div></div></div></div><div class="legend"><b>Legenda</b><span class="lg"><i class="sw line"></i>integração</span><span class="lg"><i class="sw dashed"></i>operação manual</span><span class="lg"><i class="sw mod"></i>módulo</span><span class="lg"><i class="sw core"></i>núcleo da operação</span><span class="lg"><i class="sw ext"></i>serviço externo</span><span class="lg"><i class="sw comp"></i>acesso e conformidade</span></div><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>4 / 7</span></div></section><section class="page"><h1>Fluxo operacional, da compra ao resgate</h1><p class="sub">Cada etapa na raia de quem executa; S1 a S4 são os estados que o cliente enxerga</p><div class="body"><div class="dg swim" data-links="[{&quot;from&quot;: &quot;s-cat&quot;, &quot;to&quot;: &quot;s-compra&quot;}, {&quot;from&quot;: &quot;s-compra&quot;, &quot;to&quot;: &quot;s-busca&quot;}, {&quot;from&quot;: &quot;s-busca&quot;, &quot;to&quot;: &quot;s-lanca&quot;}, {&quot;from&quot;: &quot;s-lanca&quot;, &quot;to&quot;: &quot;s-grava&quot;, &quot;kind&quot;: &quot;data&quot;}, {&quot;from&quot;: &quot;s-grava&quot;, &quot;to&quot;: &quot;s-consulta&quot;}, {&quot;from&quot;: &quot;s-consulta&quot;, &quot;to&quot;: &quot;s-pede&quot;, &quot;label&quot;: &quot;volta à loja&quot;}, {&quot;from&quot;: &quot;s-pede&quot;, &quot;to&quot;: &quot;s-resgate&quot;}, {&quot;from&quot;: &quot;s-resgate&quot;, &quot;to&quot;: &quot;s-debita&quot;, &quot;kind&quot;: &quot;data&quot;}]"><div class="sl" style="grid-template-columns:118px repeat(4,1fr);grid-template-rows:auto repeat(9,minmax(76px,auto))"><div class="sl-h sl-status" style="grid-column:1;grid-row:1;--c:#2a4fa8;--cs:#eaf0fb">O que o cliente vê</div><div class="sl-h" style="grid-column:2;grid-row:1;--c:#c4601a;--cs:#fdf0e3">Administrador</div><div class="sl-h" style="grid-column:3;grid-row:1;--c:#1f7a78;--cs:#e4f3f2">Cliente</div><div class="sl-h" style="grid-column:4;grid-row:1;--c:#1d2b4a;--cs:#e8ebf2">Operador de caixa</div><div class="sl-h" style="grid-column:5;grid-row:1;--c:#2a4fa8;--cs:#eaf0fb">Sistema</div><div class="sl-bg" style="grid-column:2;grid-row:2 / span 9"></div><div class="sl-bg" style="grid-column:3;grid-row:2 / span 9"></div><div class="sl-bg" style="grid-column:4;grid-row:2 / span 9"></div><div class="sl-bg" style="grid-column:5;grid-row:2 / span 9"></div><div class="st-cell" style="grid-column:1;grid-row:4"><span class="st-code">S1</span><span>Cliente cadastrado</span></div><div class="st-cell" style="grid-column:1;grid-row:6"><span class="st-code">S2</span><span>Crédito na carteira</span></div><div class="st-cell" style="grid-column:1;grid-row:7"><span class="st-code">S3</span><span>Saldo e histórico visíveis</span></div><div class="st-cell" style="grid-column:1;grid-row:10"><span class="st-code">S4</span><span>Resgate concluído</span></div><div class="sl-cell" style="grid-column:2;grid-row:2"><div class="card step" style="--c:#c4601a;--cs:#fdf0e3" data-id="s-cat"><b>Cadastra produtos</b><p>define os créditos de cada um</p></div></div><div class="sl-cell" style="grid-column:3;grid-row:3"><div class="card step" style="--c:#1f7a78;--cs:#e4f3f2" data-id="s-compra"><b>Faz a compra</b><p>informa o telefone</p></div></div><div class="sl-cell" style="grid-column:4;grid-row:4"><div class="card step" style="--c:#1d2b4a;--cs:#e8ebf2" data-id="s-busca"><b>Busca ou cadastra</b><p>pelo telefone</p></div></div><div class="sl-cell" style="grid-column:4;grid-row:5"><div class="card step" style="--c:#1d2b4a;--cs:#e8ebf2" data-id="s-lanca"><b>Lança o crédito</b><p>clica no produto vendido</p></div></div><div class="sl-cell" style="grid-column:5;grid-row:6"><div class="card step" style="--c:#2a4fa8;--cs:#eaf0fb" data-id="s-grava"><b>Grava saldo e histórico</b><p>na mesma transação de banco</p></div></div><div class="sl-cell" style="grid-column:3;grid-row:7"><div class="card step" style="--c:#1f7a78;--cs:#e4f3f2" data-id="s-consulta"><b>Consulta o saldo</b><p>no PWA</p></div></div><div class="sl-cell" style="grid-column:3;grid-row:8"><div class="card step" style="--c:#1f7a78;--cs:#e4f3f2" data-id="s-pede"><b>Pede o resgate</b><p>numa próxima visita</p></div></div><div class="sl-cell" style="grid-column:4;grid-row:9"><div class="card step" style="--c:#1d2b4a;--cs:#e8ebf2" data-id="s-resgate"><b>Lança o resgate</b><p>quantidade de créditos</p></div></div><div class="sl-cell" style="grid-column:5;grid-row:10"><div class="card step" style="--c:#2e7d4f;--cs:#e6f4ec" data-id="s-debita"><b>Valida e debita</b><p>recusa se faltar saldo</p></div></div></div></div></div><div class="legend"><b>Legenda</b><span class="lg"><i class="sw line"></i>sequência de etapas</span><span class="lg"><i class="sw stat"></i>marco de status visível ao usuário</span></div><p class="note">A volta do cliente entre S3 e o resgate é exatamente o que o piloto precisa medir. Hoje o lançamento não registra o operador; isso entra na fase 4.</p><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>5 / 7</span></div></section><section class="page"><h1>Roadmap em fases</h1><p class="sub">Cada fase só começa quando o critério de saída da anterior é cumprido</p><div class="body"><div class="roadmap"><div class="ph-row"><div class="ph"><small>FASE 1</small><b>Fechar o MVP atual</b></div><div class="ph-card"><ul><li>PR da feature/painel-caixa-completo para a develop</li><li>Remover a branch remota duplicada</li></ul></div></div><div class="ph-exit"><div class="ex-l"><i class="dia"></i><b>Saída da Fase 1</b></div><div class="ex-r">Painel do caixa mergeado na develop</div></div><div class="ph-row"><div class="ph"><small>FASE 2</small><b>Segurança mínima</b></div><div class="ph-card"><ul><li>JWT assinado com expiração</li><li>Senhas com hash (bcrypt)</li><li>CORS restrito à origem do front</li><li>Escape de texto no front (XSS)</li></ul></div></div><div class="ph-exit"><div class="ex-l"><i class="dia"></i><b>Saída da Fase 2</b></div><div class="ex-r">Nenhuma rota do caixa aceita token forjado</div></div><div class="ph-row"><div class="ph"><small>FASE 3</small><b>Acesso do cliente</b></div><div class="ph-card"><ul><li>Código de acesso por WhatsApp/SMS</li><li>Extrato protegido por login</li></ul></div></div><div class="ph-exit"><div class="ex-l"><i class="dia"></i><b>Saída da Fase 3</b></div><div class="ex-r">Cliente só vê o próprio extrato depois do código</div></div><div class="ph-row"><div class="ph"><small>FASE 4</small><b>Auditoria e testes</b></div><div class="ph-card"><ul><li>Operador e produto em cada transação</li><li>Estorno no lugar do débito manual</li><li>Testes com pytest para saldo, resgate e perfis</li></ul></div></div><div class="ph-exit"><div class="ex-l"><i class="dia"></i><b>Saída da Fase 4</b></div><div class="ex-r">Todo lançamento é rastreável e os testes passam</div></div><div class="ph-row"><div class="ph"><small>FASE 5</small><b>Infra e deploy</b></div><div class="ph-card"><ul><li>Migrations com Alembic</li><li>Postgres/Supabase</li><li>Docker e publicação</li><li>Backup do banco</li></ul></div></div><div class="ph-exit"><div class="ex-l"><i class="dia"></i><b>Saída da Fase 5</b></div><div class="ex-r">Sistema no ar em endereço público, com backup</div></div><div class="ph-row"><div class="ph"><small>FASE 6</small><b>Piloto na loja</b></div><div class="ph-card"><ul><li>Treinar a equipe do caixa</li><li>Rodar por 3 a 4 semanas</li><li>Medir o % de clientes com crédito que voltam em até 30 dias</li><li>Decidir: escalar, ajustar ou parar</li></ul></div></div></div></div><p class="note">Sem datas: o prazo de cada fase depende da disponibilidade de desenvolvimento. Duração do piloto e janela de 30 dias são propostas, a validar com o Maná.</p><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>6 / 7</span></div></section><section class="page"><h1>Premissas, riscos e pontos a validar</h1><p class="sub">O que já está definido e o que ainda precisa de resposta</p><div class="body"><table class="as"><thead><tr><th>Tipo</th><th>Item</th><th>Quem valida / próximo passo</th></tr></thead><tbody><tr><td><span class="bd bd-dado">Dado informado</span></td><td>Caixa lança créditos manualmente; cliente se identifica pelo telefone</td><td>Código atual</td></tr><tr><td><span class="bd bd-dado">Dado informado</span></td><td>Créditos por produto são definidos pelo admin no catálogo</td><td>Código atual</td></tr><tr><td><span class="bd bd-premissa">Premissa</span></td><td>Acesso do cliente por código via WhatsApp/SMS (recomendado, não decidido)</td><td>Dev decide antes da fase 3</td></tr><tr><td><span class="bd bd-premissa">Premissa</span></td><td>Métrica de sucesso: % de clientes com crédito que voltam em até 30 dias</td><td>Validar com o dono do Maná</td></tr><tr><td><span class="bd bd-estimativa">Estimativa</span></td><td>3 a 4 semanas de piloto bastam para ver diferença no retorno</td><td>Conferir volume de vendas da loja</td></tr><tr><td><span class="bd bd-risco">Risco</span></td><td>Token provisório permite se passar por caixa ou admin</td><td>Fase 2</td></tr><tr><td><span class="bd bd-risco">Risco</span></td><td>Extrato aberto pelo telefone expõe dados pessoais (LGPD)</td><td>Fase 3</td></tr><tr><td><span class="bd bd-risco">Risco</span></td><td>Sem registro do operador, erro ou fraude no caixa não é rastreável</td><td>Fase 4</td></tr><tr><td><span class="bd bd-pergunta">Pergunta em aberto</span></td><td>O que o cliente ganha no resgate e quantos créditos isso custa?</td><td>Dono do Maná</td></tr><tr><td><span class="bd bd-pergunta">Pergunta em aberto</span></td><td>Os créditos expiram? Existe linha de base de retorno sem o programa?</td><td>Dono do Maná</td></tr><tr><td><span class="bd bd-pergunta">Pergunta em aberto</span></td><td>Quem paga desenvolvimento, hospedagem e mensagens?</td><td>Dev e dono do Maná</td></tr></tbody></table></div><div class="pf"><span>Maná: programa de fidelidade com créditos digitais</span><span>7 / 7</span></div></section><script>
+(function(){
+var NS='http://www.w3.org/2000/svg';
+var COL={data:'#2a4fa8',money:'#2e7d4f',manual:'#c4601a',plain:'#5b6475'};
+function rel(el,root){var a=el.getBoundingClientRect(),r=root.getBoundingClientRect();
+  return {l:a.left-r.left,r:a.right-r.left,t:a.top-r.top,b:a.bottom-r.top,h:a.height,w:a.width};}
+function mk(n,attrs){var e=document.createElementNS(NS,n);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+function draw(root){
+  var old=root.querySelector(':scope > svg.ov'); if(old) old.remove();
+  var links=JSON.parse(root.getAttribute('data-links')||'[]'); if(!links.length) return;
+  var W=root.offsetWidth,H=root.offsetHeight;
+  var svg=mk('svg',{class:'ov',width:W,height:H,viewBox:'0 0 '+W+' '+H});
+  var defs=mk('defs',{});
+  Object.keys(COL).forEach(function(k){
+    var m=mk('marker',{id:'ar-'+k,viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'6',markerHeight:'6',orient:'auto-start-reverse'});
+    m.appendChild(mk('path',{d:'M0,0 L10,5 L0,10 z',fill:COL[k]})); defs.appendChild(m);});
+  svg.appendChild(defs);
+  var items=[];
+  links.forEach(function(l){
+    var a=root.querySelector('[data-id="'+l.from+'"]'),b=root.querySelector('[data-id="'+l.to+'"]');
+    if(!a||!b) return;
+    var ra=rel(a,root),rb=rel(b,root),mode;
+    if(l.route==='outer-right'||l.route==='outer-left') mode=l.route;
+    else{
+      var gap=(ra.r<rb.l)?rb.l-ra.r:((rb.r<ra.l)?ra.l-rb.r:-1);
+      var vs=(ra.b<=rb.t)?'vd':((rb.b<=ra.t)?'vu':null);
+      if(gap>=30) mode=(ra.r<rb.l)?'hf':'hb';
+      else if(vs) mode=vs;
+      else if(gap>=0) mode=(ra.r<rb.l)?'hf':'hb';
+      else mode='vd';
+    }
+    var s={hf:['r','l'],hb:['l','r'],vd:['b','t'],vu:['t','b'],'outer-right':['r','r'],'outer-left':['l','l']}[mode];
+    items.push({l:l,ra:ra,rb:rb,mode:mode,sa:s[0],sb:s[1],ka:l.from+'|'+s[0],kb:l.to+'|'+s[1]});
+  });
+  var groups={};
+  items.forEach(function(it){(groups[it.ka]=groups[it.ka]||[]).push({it:it,end:'a'});(groups[it.kb]=groups[it.kb]||[]).push({it:it,end:'b'});});
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k],side=k.split('|')[1],horiz=(side==='l'||side==='r');
+    g.sort(function(x,y){var ox=x.end==='a'?x.it.rb:x.it.ra,oy=y.end==='a'?y.it.rb:y.it.ra;return horiz?(ox.t-oy.t):(ox.l-oy.l);});
+    g.forEach(function(e,i){e.it['f'+e.end]=(i+1)/(g.length+1);});
+  });
+  function pt(r,side,f){
+    if(side==='l') return [r.l,r.t+r.h*f]; if(side==='r') return [r.r,r.t+r.h*f];
+    if(side==='t') return [r.l+r.w*f,r.t]; return [r.l+r.w*f,r.b];}
+  items.forEach(function(it,n){
+    var p1=pt(it.ra,it.sa,it.fa),p2=pt(it.rb,it.sb,it.fb),pts,lx,ly,m=it.mode;
+    if(m==='hf'||m==='hb'){var mx=(p1[0]+p2[0])/2;pts=[p1,[mx,p1[1]],[mx,p2[1]],p2];
+      if(Math.abs(p1[1]-p2[1])<3){pts=[p1,p2];ly=p1[1]-3;lx=mx;}else{lx=mx;ly=(p1[1]+p2[1])/2;}}
+    else if(m==='vd'||m==='vu'){var my=(p1[1]+p2[1])/2;pts=[p1,[p1[0],my],[p2[0],my],p2];
+      if(Math.abs(p1[0]-p2[0])<3){pts=[p1,p2];lx=p1[0]+4;ly=my;}else{lx=(p1[0]+p2[0])/2;ly=my-3;}}
+    else{var xm=(m==='outer-right')?Math.max(p1[0],p2[0])+20+n%3*6:Math.min(p1[0],p2[0])-20-n%3*6;
+      pts=[p1,[xm,p1[1]],[xm,p2[1]],p2];lx=xm;ly=(p1[1]+p2[1])/2;}
+    var kind=it.l.kind||'plain'; if(!COL[kind]) kind='plain';
+    var d=pts.map(function(q,i){return (i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ');
+    var path=mk('path',{d:d,fill:'none',stroke:COL[kind],'stroke-width':kind==='money'?2.4:1.5,'stroke-linejoin':'round','marker-end':'url(#ar-'+kind+')'});
+    if(kind==='manual') path.setAttribute('stroke-dasharray','5 3');
+    if(it.l.both) path.setAttribute('marker-start','url(#ar-'+kind+')');
+    svg.appendChild(path);
+    if(it.l.label){
+      var outer=(m==='outer-right'||m==='outer-left'),tx=outer?(m==='outer-right'?lx+9:lx-3):lx;
+      var t=mk('text',{x:tx,y:ly,'text-anchor':'middle',class:'lbl'});
+      if(outer) t.setAttribute('transform','rotate(-90 '+tx+' '+ly+')');
+      t.textContent=it.l.label;svg.appendChild(t);}
+  });
+  root.appendChild(svg);
+}
+function all(){document.querySelectorAll('.dg').forEach(draw);}
+window.addEventListener('load',all);window.addEventListener('resize',all);window.addEventListener('beforeprint',all);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(all);
+})();
+</script></body></html>

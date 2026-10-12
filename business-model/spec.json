@@ -1,0 +1,610 @@
+{
+  "meta": {
+    "title": "Maná: programa de fidelidade com créditos digitais",
+    "client": "Maná (ex-Maná Açaí), João Pessoa",
+    "author": "Modelo de acompanhamento do projeto mana-acai",
+    "date": "2026-10",
+    "lang": "pt-BR"
+  },
+  "pages": [
+    {
+      "type": "summary",
+      "title": "Visão geral do modelo",
+      "subtitle": "Programa de créditos que o caixa lança a cada compra e o cliente acompanha pelo celular, para testar se isso faz o cliente voltar",
+      "lead": "A cada compra o caixa lança créditos na carteira do cliente, identificado pelo telefone; o cliente consulta o saldo num app web (PWA) e troca os créditos na loja. O MVP existe para responder uma pergunta: crédito digital aumenta o retorno do cliente?",
+      "kpis": [
+        {
+          "value": "3 perfis",
+          "label": "cliente, caixa e admin (dado)"
+        },
+        {
+          "value": "4 commits",
+          "label": "do painel do caixa aguardando merge na develop"
+        },
+        {
+          "value": "30 dias",
+          "label": "janela de retorno a medir no piloto (proposta)"
+        },
+        {
+          "value": "3 a 4 semanas",
+          "label": "duração do piloto na loja (proposta)"
+        }
+      ],
+      "blocks": [
+        {
+          "title": "Problema",
+          "tone": "red",
+          "items": [
+            "Não há motivo registrado para o cliente voltar",
+            "A loja não conhece a frequência de cada cliente",
+            "Sem dado para decidir se fidelidade vale o custo"
+          ]
+        },
+        {
+          "title": "Proposta",
+          "tone": "blue",
+          "items": [
+            "Créditos por produto, lançados no caixa",
+            "Saldo e histórico no celular do cliente",
+            "Resgate de créditos no balcão"
+          ]
+        },
+        {
+          "title": "Estado atual",
+          "tone": "orange",
+          "items": [
+            "Painel do caixa, cadastro, catálogo e resgate prontos",
+            "Login provisório, sem testes e sem deploy",
+            "Extrato do cliente acessível só com o telefone"
+          ]
+        },
+        {
+          "title": "Fora do escopo do MVP",
+          "tone": "gray",
+          "items": [
+            "QR code na compra",
+            "Rede com vários estabelecimentos",
+            "Aplicativo nativo"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "canvas",
+      "title": "Modelo de negócio em um quadro",
+      "subtitle": "Os nove blocos do canvas preenchidos com o que existe hoje e o que está planejado",
+      "blocks": {
+        "partners": [
+          "Maná (estabelecimento)",
+          "Provedor de WhatsApp/SMS (planejado)",
+          "Hospedagem e banco de dados (planejado)"
+        ],
+        "activities": [
+          "Lançar créditos e resgates no caixa",
+          "Manter o catálogo de produtos",
+          "Acompanhar a métrica de retorno"
+        ],
+        "resources": [
+          "API, painel do caixa e PWA",
+          "Equipe do caixa treinada",
+          "Base de clientes por telefone"
+        ],
+        "value": [
+          "Cliente: créditos a cada compra, trocáveis na loja",
+          "Loja: motivo para o cliente voltar",
+          "Loja: base própria de clientes e frequência"
+        ],
+        "relationship": [
+          "Atendimento no balcão",
+          "App para consultar saldo e histórico"
+        ],
+        "channels": [
+          "Caixa da loja",
+          "PWA no celular do cliente"
+        ],
+        "segments": [
+          "Clientes recorrentes do Maná em João Pessoa"
+        ],
+        "costs": [
+          "Desenvolvimento",
+          "Hospedagem e banco",
+          "Mensagens de código (OTP)",
+          "Produtos dados no resgate"
+        ],
+        "revenue": [
+          "Mais visitas e recompra (a medir no piloto)",
+          "Cliente não paga pelo programa",
+          "Modelo comercial com o Maná a definir"
+        ]
+      }
+    },
+    {
+      "type": "ecosystem",
+      "title": "Ecossistema da operação",
+      "subtitle": "Quem participa, por onde passa o dado e por onde passa o dinheiro",
+      "center": {
+        "title": "Sistema de fidelidade",
+        "tone": "blue",
+        "items": [
+          "login e perfis",
+          "cadastro de clientes",
+          "catálogo de produtos",
+          "carteira e histórico (ledger)",
+          "painel do caixa",
+          "app do cliente (PWA)"
+        ]
+      },
+      "groups": [
+        {
+          "id": "g-loja",
+          "title": "Operação da loja",
+          "tone": "navy",
+          "side": "left",
+          "cards": [
+            {
+              "id": "caixa",
+              "title": "Operador de caixa",
+              "text": "busca cliente, lança crédito e resgate"
+            },
+            {
+              "id": "admin",
+              "title": "Administrador",
+              "text": "define os créditos de cada produto"
+            }
+          ]
+        },
+        {
+          "id": "g-cliente",
+          "title": "Clientes",
+          "tone": "teal",
+          "side": "left",
+          "cards": [
+            {
+              "id": "cliente",
+              "title": "Cliente do Maná",
+              "text": "compra, informa o telefone e consulta o saldo"
+            }
+          ]
+        },
+        {
+          "id": "g-ext",
+          "title": "Serviços externos",
+          "tone": "blue",
+          "side": "right",
+          "cards": [
+            {
+              "id": "otp",
+              "title": "WhatsApp/SMS",
+              "text": "envia código de acesso ao cliente",
+              "tag": {
+                "label": "ainda não existe:",
+                "text": "planejado para a fase 3"
+              }
+            },
+            {
+              "id": "banco",
+              "title": "Banco e hospedagem",
+              "text": "SQLite local hoje; Postgres/Supabase depois"
+            }
+          ]
+        },
+        {
+          "id": "g-reg",
+          "title": "Conformidade",
+          "tone": "purple",
+          "side": "bottom",
+          "cards": [
+            {
+              "title": "LGPD",
+              "text": "nome, telefone e histórico de compras são dados pessoais"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "from": "g-loja",
+          "to": "center",
+          "label": "créditos, resgates",
+          "both": true
+        },
+        {
+          "from": "cliente",
+          "to": "center",
+          "label": "consulta saldo"
+        },
+        {
+          "from": "center",
+          "to": "otp",
+          "label": "código",
+          "kind": "manual"
+        },
+        {
+          "from": "center",
+          "to": "banco",
+          "label": "dados",
+          "both": true
+        },
+        {
+          "from": "cliente",
+          "to": "caixa",
+          "label": "paga a compra",
+          "kind": "money",
+          "route": "outer-left"
+        }
+      ],
+      "note": "O dinheiro da compra não passa pelo sistema: ele só registra créditos. Seta tracejada indica integração ainda não construída."
+    },
+    {
+      "type": "architecture",
+      "title": "Arquitetura lógica do sistema",
+      "subtitle": "Quem acessa, que módulos existem na API e do que eles dependem",
+      "actors": {
+        "title": "Acesso por papel",
+        "items": [
+          {
+            "title": "Cliente",
+            "text": "vê o próprio saldo e histórico"
+          },
+          {
+            "title": "Operador de caixa",
+            "text": "busca, cadastra, lança crédito e resgate"
+          },
+          {
+            "title": "Administrador",
+            "text": "tudo do caixa e gestão do catálogo"
+          }
+        ]
+      },
+      "access": {
+        "band": "Controle de acesso",
+        "title": "Login por perfil (hoje com token provisório)",
+        "text": "caixa e admin entram com senha; cliente só informa o telefone. JWT na fase 2 e código por WhatsApp/SMS na fase 3"
+      },
+      "modules": {
+        "title": "Módulos da API (FastAPI)",
+        "items": [
+          {
+            "id": "m-auth",
+            "title": "Autenticação e perfis",
+            "text": "login de caixa e admin; checagem de perfil por rota"
+          },
+          {
+            "id": "m-cli",
+            "title": "Cadastro de clientes",
+            "text": "busca e cadastro pelo telefone"
+          },
+          {
+            "id": "m-cat",
+            "title": "Catálogo de produtos",
+            "text": "créditos por produto, editado pelo admin"
+          },
+          {
+            "id": "m-ledger",
+            "title": "Carteira e ledger",
+            "core": true,
+            "text": "saldo e transação gravados juntos, com trava na carteira; bloqueia saldo negativo"
+          },
+          {
+            "id": "m-ext",
+            "title": "Extrato do cliente",
+            "text": "saldo e histórico exibidos no PWA"
+          }
+        ]
+      },
+      "externals": {
+        "title": "Dependências externas",
+        "items": [
+          {
+            "id": "x-db",
+            "title": "Banco de dados",
+            "text": "SQLite hoje; Postgres/Supabase com migrations (Alembic) na fase 5"
+          },
+          {
+            "id": "x-otp",
+            "title": "Provedor WhatsApp/SMS",
+            "text": "código de acesso do cliente",
+            "manual": {
+              "label": "ainda não existe:",
+              "text": "cliente entra só com o telefone no MVP"
+            }
+          },
+          {
+            "id": "x-host",
+            "title": "Hospedagem (Docker)",
+            "text": "API e front publicados na fase 5"
+          }
+        ]
+      },
+      "links": [
+        {
+          "from": "m-ledger",
+          "to": "x-db"
+        },
+        {
+          "from": "m-auth",
+          "to": "x-otp",
+          "kind": "manual"
+        }
+      ],
+      "cross": {
+        "band": "Auditoria e LGPD: transversal a todos os módulos",
+        "title": "Trilha de auditoria e proteção de dados",
+        "text": "registrar qual operador fez cada lançamento e qual produto gerou o crédito; estorno em vez de débito manual; extrato visível só para o dono da carteira"
+      }
+    },
+    {
+      "type": "swimlane",
+      "title": "Fluxo operacional, da compra ao resgate",
+      "subtitle": "Cada etapa na raia de quem executa; S1 a S4 são os estados que o cliente enxerga",
+      "status_title": "O que o cliente vê",
+      "lanes": [
+        {
+          "id": "admin",
+          "title": "Administrador",
+          "tone": "orange"
+        },
+        {
+          "id": "cliente",
+          "title": "Cliente",
+          "tone": "teal"
+        },
+        {
+          "id": "caixa",
+          "title": "Operador de caixa",
+          "tone": "navy"
+        },
+        {
+          "id": "sistema",
+          "title": "Sistema",
+          "tone": "blue"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s-cat",
+          "lane": "admin",
+          "row": 1,
+          "title": "Cadastra produtos",
+          "text": "define os créditos de cada um"
+        },
+        {
+          "id": "s-compra",
+          "lane": "cliente",
+          "row": 2,
+          "title": "Faz a compra",
+          "text": "informa o telefone"
+        },
+        {
+          "id": "s-busca",
+          "lane": "caixa",
+          "row": 3,
+          "title": "Busca ou cadastra",
+          "text": "pelo telefone",
+          "status": {
+            "code": "S1",
+            "label": "Cliente cadastrado"
+          }
+        },
+        {
+          "id": "s-lanca",
+          "lane": "caixa",
+          "row": 4,
+          "title": "Lança o crédito",
+          "text": "clica no produto vendido"
+        },
+        {
+          "id": "s-grava",
+          "lane": "sistema",
+          "row": 5,
+          "title": "Grava saldo e histórico",
+          "text": "na mesma transação de banco",
+          "status": {
+            "code": "S2",
+            "label": "Crédito na carteira"
+          }
+        },
+        {
+          "id": "s-consulta",
+          "lane": "cliente",
+          "row": 6,
+          "title": "Consulta o saldo",
+          "text": "no PWA",
+          "status": {
+            "code": "S3",
+            "label": "Saldo e histórico visíveis"
+          }
+        },
+        {
+          "id": "s-pede",
+          "lane": "cliente",
+          "row": 7,
+          "title": "Pede o resgate",
+          "text": "numa próxima visita"
+        },
+        {
+          "id": "s-resgate",
+          "lane": "caixa",
+          "row": 8,
+          "title": "Lança o resgate",
+          "text": "quantidade de créditos"
+        },
+        {
+          "id": "s-debita",
+          "lane": "sistema",
+          "row": 9,
+          "title": "Valida e debita",
+          "text": "recusa se faltar saldo",
+          "tone": "green",
+          "status": {
+            "code": "S4",
+            "label": "Resgate concluído"
+          }
+        }
+      ],
+      "links": [
+        {
+          "from": "s-cat",
+          "to": "s-compra"
+        },
+        {
+          "from": "s-compra",
+          "to": "s-busca"
+        },
+        {
+          "from": "s-busca",
+          "to": "s-lanca"
+        },
+        {
+          "from": "s-lanca",
+          "to": "s-grava",
+          "kind": "data"
+        },
+        {
+          "from": "s-grava",
+          "to": "s-consulta"
+        },
+        {
+          "from": "s-consulta",
+          "to": "s-pede",
+          "label": "volta à loja"
+        },
+        {
+          "from": "s-pede",
+          "to": "s-resgate"
+        },
+        {
+          "from": "s-resgate",
+          "to": "s-debita",
+          "kind": "data"
+        }
+      ],
+      "note": "A volta do cliente entre S3 e o resgate é exatamente o que o piloto precisa medir. Hoje o lançamento não registra o operador; isso entra na fase 4."
+    },
+    {
+      "type": "roadmap",
+      "title": "Roadmap em fases",
+      "subtitle": "Cada fase só começa quando o critério de saída da anterior é cumprido",
+      "phases": [
+        {
+          "name": "Fechar o MVP atual",
+          "items": [
+            "PR da feature/painel-caixa-completo para a develop",
+            "Remover a branch remota duplicada"
+          ],
+          "exit": "Painel do caixa mergeado na develop"
+        },
+        {
+          "name": "Segurança mínima",
+          "items": [
+            "JWT assinado com expiração",
+            "Senhas com hash (bcrypt)",
+            "CORS restrito à origem do front",
+            "Escape de texto no front (XSS)"
+          ],
+          "exit": "Nenhuma rota do caixa aceita token forjado"
+        },
+        {
+          "name": "Acesso do cliente",
+          "items": [
+            "Código de acesso por WhatsApp/SMS",
+            "Extrato protegido por login"
+          ],
+          "exit": "Cliente só vê o próprio extrato depois do código"
+        },
+        {
+          "name": "Auditoria e testes",
+          "items": [
+            "Operador e produto em cada transação",
+            "Estorno no lugar do débito manual",
+            "Testes com pytest para saldo, resgate e perfis"
+          ],
+          "exit": "Todo lançamento é rastreável e os testes passam"
+        },
+        {
+          "name": "Infra e deploy",
+          "items": [
+            "Migrations com Alembic",
+            "Postgres/Supabase",
+            "Docker e publicação",
+            "Backup do banco"
+          ],
+          "exit": "Sistema no ar em endereço público, com backup"
+        },
+        {
+          "name": "Piloto na loja",
+          "items": [
+            "Treinar a equipe do caixa",
+            "Rodar por 3 a 4 semanas",
+            "Medir o % de clientes com crédito que voltam em até 30 dias",
+            "Decidir: escalar, ajustar ou parar"
+          ]
+        }
+      ],
+      "note": "Sem datas: o prazo de cada fase depende da disponibilidade de desenvolvimento. Duração do piloto e janela de 30 dias são propostas, a validar com o Maná.",
+      "start_at": 1
+    },
+    {
+      "type": "assumptions",
+      "title": "Premissas, riscos e pontos a validar",
+      "subtitle": "O que já está definido e o que ainda precisa de resposta",
+      "items": [
+        {
+          "kind": "dado",
+          "text": "Caixa lança créditos manualmente; cliente se identifica pelo telefone",
+          "next": "Código atual"
+        },
+        {
+          "kind": "dado",
+          "text": "Créditos por produto são definidos pelo admin no catálogo",
+          "next": "Código atual"
+        },
+        {
+          "kind": "premissa",
+          "text": "Acesso do cliente por código via WhatsApp/SMS (recomendado, não decidido)",
+          "next": "Dev decide antes da fase 3"
+        },
+        {
+          "kind": "premissa",
+          "text": "Métrica de sucesso: % de clientes com crédito que voltam em até 30 dias",
+          "next": "Validar com o dono do Maná"
+        },
+        {
+          "kind": "estimativa",
+          "text": "3 a 4 semanas de piloto bastam para ver diferença no retorno",
+          "next": "Conferir volume de vendas da loja"
+        },
+        {
+          "kind": "risco",
+          "text": "Token provisório permite se passar por caixa ou admin",
+          "next": "Fase 2"
+        },
+        {
+          "kind": "risco",
+          "text": "Extrato aberto pelo telefone expõe dados pessoais (LGPD)",
+          "next": "Fase 3"
+        },
+        {
+          "kind": "risco",
+          "text": "Sem registro do operador, erro ou fraude no caixa não é rastreável",
+          "next": "Fase 4"
+        },
+        {
+          "kind": "pergunta",
+          "text": "O que o cliente ganha no resgate e quantos créditos isso custa?",
+          "next": "Dono do Maná"
+        },
+        {
+          "kind": "pergunta",
+          "text": "Os créditos expiram? Existe linha de base de retorno sem o programa?",
+          "next": "Dono do Maná"
+        },
+        {
+          "kind": "pergunta",
+          "text": "Quem paga desenvolvimento, hospedagem e mensagens?",
+          "next": "Dev e dono do Maná"
+        }
+      ]
+    }
+  ]
+}
