@@ -1,18 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
 
   :root{
-    --acai: #2B1A45;
-    --acai-2: #3A2560;
-    --acai-3: #4A3078;
-    --cream: #F7F2E9;
-    --cream-dim: #C9BFD9;
-    --yellow: #F2C245;
-    --green: #6FCB8E;
-    --line: rgba(247,242,233,0.12);
+    --acai: #4A1650;
+    --acai-2: #5B1E60;
+    --acai-3: #732D73;
+    --cream: #FFFBF2;
+    --cream-dim: #D9C2DC;
+    --yellow: #FBB91C;
+    --green: #8DC63F;
+    --line: rgba(255,251,242,0.14);
   }
   *{ box-sizing:border-box; }
   body{
-    margin:0; background:#150C26; color:var(--cream);
+    margin:0; background:#2D0D31; color:var(--cream);
     font-family:'Manrope',sans-serif;
     padding:32px 16px 64px;
   }
@@ -40,6 +40,7 @@
   }
   .phone-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
   .brand{ display:flex; align-items:center; gap:8px; }
+  .brand img{ width:34px; height:34px; border-radius:9px; object-fit:cover; }
   .brand span{ font-family:'Fraunces',serif; font-weight:600; font-size:19px; letter-spacing:0.2px; }
   .greet{ font-size:12px; color:var(--cream-dim); }
   .avatar{
