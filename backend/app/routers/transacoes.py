@@ -3,12 +3,17 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
+from ..auth_utils import get_caixa_atual
 
 router = APIRouter(prefix="/transacoes", tags=["transacoes"])
 
 
 @router.post("", response_model=schemas.TransacaoOut)
-def lancar_transacao(payload: schemas.TransacaoCreate, db: Session = Depends(get_db)):
+def lancar_transacao(
+    payload: schemas.TransacaoCreate,
+    db: Session = Depends(get_db),
+    _usuario_atual: models.Usuario = Depends(get_caixa_atual),
+):
     carteira = db.query(models.Carteira).filter(
         models.Carteira.id == payload.carteira_id
     ).with_for_update().first()
