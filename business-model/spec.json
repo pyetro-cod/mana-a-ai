@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Maná: programa de fidelidade com créditos digitais",
-    "client": "Maná (ex-Maná Açaí), João Pessoa",
+    "title": "Manaçaí: programa de fidelidade com créditos digitais",
+    "client": "Manaçaí, João Pessoa",
     "author": "Modelo de acompanhamento do projeto mana-acai",
     "date": "2026-10",
     "lang": "pt-BR"
@@ -75,7 +75,7 @@
       "subtitle": "Os nove blocos do canvas preenchidos com o que existe hoje e o que está planejado",
       "blocks": {
         "partners": [
-          "Maná (estabelecimento)",
+          "Manaçaí (estabelecimento)",
           "Provedor de WhatsApp/SMS (planejado)",
           "Hospedagem e banco de dados (planejado)"
         ],
@@ -103,7 +103,7 @@
           "PWA no celular do cliente"
         ],
         "segments": [
-          "Clientes recorrentes do Maná em João Pessoa"
+          "Clientes recorrentes do Manaçaí em João Pessoa"
         ],
         "costs": [
           "Desenvolvimento",
@@ -114,7 +114,7 @@
         "revenue": [
           "Mais visitas e recompra (a medir no piloto)",
           "Cliente não paga pelo programa",
-          "Modelo comercial com o Maná a definir"
+          "Modelo comercial com o Manaçaí a definir"
         ]
       }
     },
@@ -161,7 +161,7 @@
           "cards": [
             {
               "id": "cliente",
-              "title": "Cliente do Maná",
+              "title": "Cliente do Manaçaí",
               "text": "compra, informa o telefone e consulta o saldo"
             }
           ]
@@ -541,7 +541,7 @@
           ]
         }
       ],
-      "note": "Sem datas: o prazo de cada fase depende da disponibilidade de desenvolvimento. Duração do piloto e janela de 30 dias são propostas, a validar com o Maná.",
+      "note": "Sem datas: o prazo de cada fase depende da disponibilidade de desenvolvimento. Duração do piloto e janela de 30 dias são propostas, a validar com o Manaçaí.",
       "start_at": 1
     },
     {
@@ -567,7 +567,7 @@
         {
           "kind": "premissa",
           "text": "Métrica de sucesso: % de clientes com crédito que voltam em até 30 dias",
-          "next": "Validar com o dono do Maná"
+          "next": "Validar com o dono do Manaçaí"
         },
         {
           "kind": "estimativa",
@@ -592,17 +592,17 @@
         {
           "kind": "pergunta",
           "text": "O que o cliente ganha no resgate e quantos créditos isso custa?",
-          "next": "Dono do Maná"
+          "next": "Dono do Manaçaí"
         },
         {
           "kind": "pergunta",
           "text": "Os créditos expiram? Existe linha de base de retorno sem o programa?",
-          "next": "Dono do Maná"
+          "next": "Dono do Manaçaí"
         },
         {
           "kind": "pergunta",
           "text": "Quem paga desenvolvimento, hospedagem e mensagens?",
-          "next": "Dev e dono do Maná"
+          "next": "Dev e dono do Manaçaí"
         }
       ]
     }
