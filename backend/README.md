@@ -7,6 +7,7 @@ API do programa de fidelidade. FastAPI + SQLAlchemy, SQLite por padrão (troque 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env    # depois preencha JWT_SECRET (comando de geração no próprio arquivo)
 python seed.py          # cria produtos + cliente e caixa de teste
 uvicorn app.main:app --reload
 ```
@@ -29,9 +30,12 @@ Docs interativas em `http://127.0.0.1:8000/docs`.
 
 ## Variáveis de ambiente
 
+Ver `.env.example`. Principais: `JWT_SECRET` (obrigatória), `JWT_EXPIRE_MINUTES`, `CORS_ORIGINS`.
+
+
 - `DATABASE_URL` — padrão `sqlite:///./mana.db`. Para Postgres: `postgresql://user:senha@host:5432/mana`
 
 ## Notas
 
-- O token de login é um **stub** pra facilitar teste local — trocar por JWT assinado antes de produção.
+- O login de caixa/admin devolve um **JWT** assinado com `JWT_SECRET` (HS256), válido por `JWT_EXPIRE_MINUTES` (padrão 8h). A API não sobe sem `JWT_SECRET` no `.env`.
 - `POST /transacoes` roda o ajuste de saldo e a inserção do histórico como uma única transação de banco (lock na carteira via `with_for_update`), seguindo a regra de ledger débito/crédito do projeto.
