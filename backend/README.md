@@ -14,6 +14,15 @@ uvicorn app.main:app --reload
 
 Docs interativas em `http://127.0.0.1:8000/docs`.
 
+O front precisa ser servido por HTTP (não abra o `index.html` com duplo clique: a origem `file://` é bloqueada pelo CORS). Em outro terminal:
+
+```bash
+cd frontend
+python -m http.server 5500
+```
+
+E acesse `http://localhost:5500`. A porta precisa estar em `CORS_ORIGINS` no `.env`.
+
 ## Usuários de teste (criados pelo seed)
 
 | Perfil | Telefone | Senha |
