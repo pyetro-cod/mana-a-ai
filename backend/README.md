@@ -30,7 +30,7 @@ pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-Rodam num banco SQLite temporário (não tocam no `mana.db`). `tests/test_seguranca.py` cobre o critério da fase 2: tokens forjados, adulterados, expirados ou sem assinatura são recusados, permissões por perfil, extrato protegido, validação contra XSS armazenado, CORS e configuração insegura.
+Rodam num banco SQLite temporário (não tocam no `mana.db`). `tests/test_login_cliente.py` cobre a fase 3 (login por código, autocadastro, limites e expiração). `tests/test_seguranca.py` cobre o critério da fase 2: tokens forjados, adulterados, expirados ou sem assinatura são recusados, permissões por perfil, extrato protegido, validação contra XSS armazenado, CORS e configuração insegura.
 
 ## Usuários de teste (criados pelo seed)
 
@@ -45,7 +45,19 @@ Rodam num banco SQLite temporário (não tocam no `mana.db`). `tests/test_segura
 - `GET /clientes?telefone=` — busca cliente e saldo
 - `POST /transacoes` — lança crédito ou débito (atômico, bloqueia saldo negativo)
 - `GET /carteira/{id}` — saldo e histórico (caixa/admin, exige token)
-- `GET /clientes/me/extrato?telefone=` — saldo e histórico do próprio cliente (app do cliente; sem login até a fase 3)
+- `POST /auth/cliente/codigo` — envia código de 6 dígitos ao telefone do cliente (10 min, 1/min e 5/h por telefone)
+- `POST /auth/cliente/entrar` — confere o código; telefone novo exige `nome` + `aceite_termos` (autocadastro); devolve JWT de cliente (30 dias)
+- `GET /clientes/me` e `GET /clientes/me/extrato` — dados, saldo e histórico do cliente logado (token de cliente)
+
+### Código de acesso em desenvolvimento
+
+Com `OTP_PROVIDER=console` (padrão em dev), o código aparece no terminal onde a API está rodando:
+
+```
+[DEV] código de acesso para 83999998888: 123456 (válido por 10 min)
+```
+
+Em produção (`APP_ENV=prod`) isso é bloqueado: é preciso `OTP_PROVIDER=whatsapp` com uma conta comercial verificada na Meta e um template de autenticação aprovado.
 
 ## Variáveis de ambiente
 

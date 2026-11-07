@@ -26,11 +26,36 @@
         </div>
 
         <div id="clienteLoginBox">
-          <div class="section-title">Entrar com seu telefone</div>
-          <div class="search-box">
-            <input type="text" id="clienteLoginTelefone" placeholder="Seu telefone" value="83999998888">
-            <button onclick="entrarCliente()">Entrar</button>
+          <div id="passoTelefone">
+            <div class="section-title">Entrar com seu telefone</div>
+            <div class="search-box">
+              <input type="tel" id="clienteLoginTelefone" placeholder="DDD + número, só dígitos" inputmode="numeric" maxlength="11" autocomplete="tel-national">
+              <button onclick="pedirCodigo()">Receber código</button>
+            </div>
           </div>
+
+          <div id="passoCodigo" style="display:none;">
+            <div class="section-title" id="codigoTitulo">Digite o código que enviamos</div>
+            <div class="search-box">
+              <input type="text" id="clienteCodigo" placeholder="6 dígitos" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+              <button onclick="confirmarCodigo()">Entrar</button>
+            </div>
+            <button class="link-btn" onclick="pedirCodigo()">Reenviar código</button>
+            <button class="link-btn" onclick="voltarParaTelefone()">Trocar telefone</button>
+          </div>
+
+          <div id="passoCadastro" style="display:none;">
+            <div class="section-title">Primeira vez aqui? Como podemos te chamar?</div>
+            <div class="search-box">
+              <input type="text" id="clienteNome" placeholder="Seu nome" maxlength="120" autocomplete="given-name">
+            </div>
+            <label class="check-line">
+              <input type="checkbox" id="clienteAceite">
+              <span>Aceito que o Manaçaí guarde meu nome, telefone e histórico de créditos para o programa de fidelidade.</span>
+            </label>
+            <button class="btn-cheio" onclick="concluirCadastro()">Criar minha conta</button>
+          </div>
+
           <div class="status-line" id="clienteLoginStatus"></div>
         </div>
 

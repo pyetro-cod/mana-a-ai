@@ -77,6 +77,38 @@ class LoginResponse(BaseModel):
     perfil: str
 
 
+class SolicitarCodigoRequest(BaseModel):
+    telefone: str
+
+    @field_validator("telefone")
+    @classmethod
+    def telefone_valido(cls, v):
+        return validar_telefone(v)
+
+
+class EntrarClienteRequest(BaseModel):
+    telefone: str
+    codigo: str = Field(..., pattern=r"^\d{6}$")
+    # Only needed the first time, when the phone has no account yet.
+    nome: Optional[str] = Field(None, min_length=2, max_length=120)
+    aceite_termos: bool = False
+
+    @field_validator("telefone")
+    @classmethod
+    def telefone_valido(cls, v):
+        return validar_telefone(v)
+
+    @field_validator("nome")
+    @classmethod
+    def nome_valido(cls, v):
+        return v if v is None else validar_nome(v)
+
+
+class EntrarClienteResponse(BaseModel):
+    token: str
+    novo_cadastro: bool
+
+
 class CarteiraOut(BaseModel):
     id: str
     saldo: int

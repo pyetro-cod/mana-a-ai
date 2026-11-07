@@ -341,55 +341,138 @@ async function carregarHistoricoCaixa(carteiraId){
 }
 
 /* ================= App do cliente ================= */
-// Sem senha ainda (depende da decisão de QR/login que ficou em aberto):
-// "entrar" aqui é auto-identificação por telefone via GET /clientes/me.
-let clienteTelefone = localStorage.getItem('manaClienteTelefone') || null;
+// Login por código de uso único: telefone → código → (primeira vez) nome + aceite.
+// O token do cliente identifica a carteira; o telefone nunca mais vai na URL.
+let clienteToken = localStorage.getItem('manaClienteToken') || null;
+let telefoneLogin = null;
+localStorage.removeItem('manaClienteTelefone'); // legacy phone-only login
 
-function atualizarTelaCliente(){
-  const logado = !!clienteTelefone;
-  document.getElementById('clienteLoginBox').style.display = logado ? 'none' : 'block';
-  document.getElementById('clientePainel').style.display = logado ? 'block' : 'none';
-  document.getElementById('clienteAvatar').textContent = logado ? clienteTelefone.slice(-2) : '?';
-  if(logado) carregarSaldoCliente();
+function statusCliente(texto, cor = 'var(--cream-dim)'){
+  const status = document.getElementById('clienteLoginStatus');
+  status.style.color = cor;
+  status.textContent = texto;
 }
 
-async function entrarCliente(){
-  const telefone = document.getElementById('clienteLoginTelefone').value.trim();
-  const status = document.getElementById('clienteLoginStatus');
-  status.style.color = 'var(--cream-dim)';
-  status.textContent = 'Entrando...';
+function mostrarPassoCliente(passo){
+  ['passoTelefone', 'passoCodigo', 'passoCadastro'].forEach(id => {
+    document.getElementById(id).style.display = id === passo ? 'block' : 'none';
+  });
+}
 
+function atualizarTelaCliente(){
+  const logado = !!clienteToken;
+  document.getElementById('clienteLoginBox').style.display = logado ? 'none' : 'block';
+  document.getElementById('clientePainel').style.display = logado ? 'block' : 'none';
+  document.getElementById('clienteAvatar').textContent = '?';
+  if(logado) carregarSaldoCliente();
+  else mostrarPassoCliente('passoTelefone');
+}
+
+async function pedirCodigo(){
+  const telefone = telefoneLogin || document.getElementById('clienteLoginTelefone').value.trim();
+  if(!/^\d{10,11}$/.test(telefone)){
+    statusCliente('Digite DDD + número, só dígitos (ex.: 83999998888).', 'var(--yellow)');
+    return;
+  }
+  statusCliente('Enviando código...');
   try{
-    const res = await fetch(`${API_BASE}/clientes/me?telefone=${encodeURIComponent(telefone)}`);
+    const res = await fetch(`${API_BASE}/auth/cliente/codigo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone })
+    });
+    const data = await res.json();
     if(!res.ok){
-      status.style.color = 'var(--yellow)';
-      status.textContent = res.status === 404 ? 'Telefone não encontrado.' : 'Erro ao entrar.';
+      statusCliente(data.detail || 'Não foi possível enviar o código.', 'var(--yellow)');
       return;
     }
-    clienteTelefone = telefone;
-    localStorage.setItem('manaClienteTelefone', telefone);
-    status.textContent = '';
-    atualizarTelaCliente();
+    telefoneLogin = telefone;
+    document.getElementById('codigoTitulo').textContent = `Digite o código enviado para ${telefone}`;
+    document.getElementById('clienteCodigo').value = '';
+    mostrarPassoCliente('passoCodigo');
+    statusCliente('Código enviado. Ele vale por 10 minutos.', 'var(--green)');
   }catch(e){
-    status.style.color = 'var(--yellow)';
-    status.textContent = `Não consegui falar com a API em ${API_BASE}.`;
+    statusCliente(`Não consegui falar com a API em ${API_BASE}.`, 'var(--yellow)');
   }
 }
 
+function voltarParaTelefone(){
+  telefoneLogin = null;
+  mostrarPassoCliente('passoTelefone');
+  statusCliente('');
+}
+
+async function entrarComCodigo(extras = {}){
+  const codigo = document.getElementById('clienteCodigo').value.trim();
+  if(!/^\d{6}$/.test(codigo)){
+    mostrarPassoCliente('passoCodigo');
+    statusCliente('O código tem 6 dígitos.', 'var(--yellow)');
+    return;
+  }
+  statusCliente('Conferindo...');
+  try{
+    const res = await fetch(`${API_BASE}/auth/cliente/entrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone: telefoneLogin, codigo, ...extras })
+    });
+    const data = await res.json();
+    if(res.status === 409 && data.detail === 'cadastro_necessario'){
+      mostrarPassoCliente('passoCadastro');
+      statusCliente('');
+      return;
+    }
+    if(!res.ok){
+      const msg = typeof data.detail === 'string' ? data.detail : 'Confira os dados e tente de novo.';
+      statusCliente(msg, 'var(--yellow)');
+      return;
+    }
+    clienteToken = data.token;
+    localStorage.setItem('manaClienteToken', clienteToken);
+    telefoneLogin = null;
+    statusCliente('');
+    atualizarTelaCliente();
+  }catch(e){
+    statusCliente(`Não consegui falar com a API em ${API_BASE}.`, 'var(--yellow)');
+  }
+}
+
+function confirmarCodigo(){
+  entrarComCodigo();
+}
+
+function concluirCadastro(){
+  const nome = document.getElementById('clienteNome').value.trim();
+  const aceite = document.getElementById('clienteAceite').checked;
+  if(nome.length < 2){
+    statusCliente('Digite seu nome.', 'var(--yellow)');
+    return;
+  }
+  if(!aceite){
+    statusCliente('Para criar a conta, é preciso aceitar o uso dos dados.', 'var(--yellow)');
+    return;
+  }
+  entrarComCodigo({ nome, aceite_termos: true });
+}
+
 function logoutCliente(){
-  clienteTelefone = null;
-  localStorage.removeItem('manaClienteTelefone');
+  clienteToken = null;
+  localStorage.removeItem('manaClienteToken');
   atualizarTelaCliente();
 }
 
 async function carregarSaldoCliente(){
+  const headers = { Authorization: `Bearer ${clienteToken}` };
   try{
-    const resCliente = await fetch(`${API_BASE}/clientes/me?telefone=${encodeURIComponent(clienteTelefone)}`);
-    if(!resCliente.ok) throw new Error('cliente não encontrado');
+    const resCliente = await fetch(`${API_BASE}/clientes/me`, { headers });
+    if(resCliente.status === 401){ logoutCliente(); return; }
+    if(!resCliente.ok) throw new Error('cliente indisponível');
     const cliente = await resCliente.json();
     document.getElementById('clienteSaldoNum').textContent = cliente.carteira.saldo;
+    document.getElementById('clienteAvatar').textContent = cliente.nome.trim().charAt(0).toUpperCase() || '?';
 
-    const resExtrato = await fetch(`${API_BASE}/clientes/me/extrato?telefone=${encodeURIComponent(clienteTelefone)}`);
+    const resExtrato = await fetch(`${API_BASE}/clientes/me/extrato`, { headers });
+    if(resExtrato.status === 401){ logoutCliente(); return; }
     if(!resExtrato.ok) throw new Error('extrato indisponível');
     const extrato = await resExtrato.json();
     const ultimo = extrato.historico[0];
