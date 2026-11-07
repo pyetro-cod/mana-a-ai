@@ -82,3 +82,20 @@ def usuario_id(telefone):
         return db.query(models.Usuario).filter_by(telefone=telefone).one().id
     finally:
         db.close()
+
+
+@pytest.fixture
+def codigos_enviados(monkeypatch):
+    """Intercepta o envio: em vez de WhatsApp/terminal, guarda {telefone: último código}."""
+    from app import otp
+    enviados = {}
+    monkeypatch.setattr(otp, "enviar_codigo", lambda telefone, codigo: enviados.__setitem__(telefone, codigo))
+    return enviados
+
+
+def entrar_como_cliente(client, codigos_enviados, telefone=TEL_CLIENTE, **cadastro):
+    assert client.post("/auth/cliente/codigo", json={"telefone": telefone}).status_code == 202
+    res = client.post("/auth/cliente/entrar",
+                      json={"telefone": telefone, "codigo": codigos_enviados[telefone], **cadastro})
+    assert res.status_code == 200, res.text
+    return res.json()["token"]

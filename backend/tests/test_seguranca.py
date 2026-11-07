@@ -139,10 +139,9 @@ def test_extrato_da_carteira_exige_token(client, token_caixa):
     assert client.get(f"/carteira/{carteira_id}", headers=auth(token_caixa)).status_code == 200
 
 
-def test_cliente_ve_o_proprio_extrato_pelo_app(client):
-    res = client.get("/clientes/me/extrato", params={"telefone": TEL_CLIENTE})
-    assert res.status_code == 200
-    assert res.json()["saldo"] == 50
+def test_extrato_do_cliente_nao_aceita_mais_so_o_telefone(client):
+    assert client.get("/clientes/me/extrato", params={"telefone": TEL_CLIENTE}).status_code == 401
+    assert client.get("/clientes/me", params={"telefone": TEL_CLIENTE}).status_code == 401
 
 
 # ---------- validação de entrada (XSS armazenado) ----------
