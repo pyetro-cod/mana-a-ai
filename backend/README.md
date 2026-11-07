@@ -23,6 +23,15 @@ python -m http.server 5500
 
 E acesse `http://localhost:5500`. A porta precisa estar em `CORS_ORIGINS` no `.env`.
 
+## Testes
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+Rodam num banco SQLite temporário (não tocam no `mana.db`). `tests/test_seguranca.py` cobre o critério da fase 2: tokens forjados, adulterados, expirados ou sem assinatura são recusados, permissões por perfil, extrato protegido, validação contra XSS armazenado, CORS e configuração insegura.
+
 ## Usuários de teste (criados pelo seed)
 
 | Perfil | Telefone | Senha |
@@ -35,7 +44,8 @@ E acesse `http://localhost:5500`. A porta precisa estar em `CORS_ORIGINS` no `.e
 - `POST /auth/login` — autentica caixa/admin
 - `GET /clientes?telefone=` — busca cliente e saldo
 - `POST /transacoes` — lança crédito ou débito (atômico, bloqueia saldo negativo)
-- `GET /carteira/{id}` — saldo e histórico
+- `GET /carteira/{id}` — saldo e histórico (caixa/admin, exige token)
+- `GET /clientes/me/extrato?telefone=` — saldo e histórico do próprio cliente (app do cliente; sem login até a fase 3)
 
 ## Variáveis de ambiente
 
