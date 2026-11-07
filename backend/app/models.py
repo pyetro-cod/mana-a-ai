@@ -54,3 +54,26 @@ class Transacao(Base):
 
     carteira = relationship("Carteira", back_populates="transacoes")
     produto = relationship("Produto")
+
+
+class CodigoAcesso(Base):
+    """Código de uso único enviado ao cliente para login (OTP)."""
+    __tablename__ = "codigos_acesso"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    telefone = Column(String, index=True, nullable=False)
+    codigo_hash = Column(String, nullable=False)  # HMAC do código, nunca o código em texto
+    tentativas = Column(Integer, nullable=False, default=0)
+    criado_em = Column(DateTime, nullable=False, default=datetime.utcnow)
+    expira_em = Column(DateTime, nullable=False)
+    usado_em = Column(DateTime, nullable=True)
+
+
+class Consentimento(Base):
+    """Registro do aceite dos termos (LGPD): quem aceitou, qual versão e quando."""
+    __tablename__ = "consentimentos"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    usuario_id = Column(String, ForeignKey("usuarios.id"), index=True, nullable=False)
+    versao_termos = Column(String, nullable=False)
+    aceito_em = Column(DateTime, nullable=False, default=datetime.utcnow)

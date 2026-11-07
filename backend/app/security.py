@@ -14,13 +14,13 @@ class TokenInvalido(Exception):
     pass
 
 
-def criar_token(usuario_id: str, perfil: str) -> str:
+def criar_token(usuario_id: str, perfil: str, validade: timedelta | None = None) -> str:
     agora = datetime.now(timezone.utc)
     payload = {
         "sub": usuario_id,
         "perfil": perfil,
         "iat": agora,
-        "exp": agora + timedelta(minutes=settings.jwt_expire_minutes),
+        "exp": agora + (validade or timedelta(minutes=settings.jwt_expire_minutes)),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 

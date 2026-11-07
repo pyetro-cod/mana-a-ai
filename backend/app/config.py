@@ -14,16 +14,40 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 # HS256 keys shorter than 32 bytes can be brute-forced offline from a single token.
 MIN_SECRET_LENGTH = 32
 
+AMBIENTES = ("dev", "prod")
+PROVEDORES_OTP = ("console", "whatsapp")
+
 
 @dataclass(frozen=True)
 class Settings:
+    app_env: str
     jwt_secret: str
     jwt_algorithm: str
     jwt_expire_minutes: int
+    jwt_cliente_expire_dias: int
     cors_origins: list[str]
+    otp_provider: str
+    otp_expire_minutes: int
+    whatsapp_token: str
+    whatsapp_phone_number_id: str
+    whatsapp_template: str
+
+
+def _int_positivo(nome: str, padrao: str) -> int:
+    try:
+        valor = int(os.getenv(nome, padrao))
+    except ValueError as exc:
+        raise RuntimeError(f"{nome} deve ser um número inteiro") from exc
+    if valor <= 0:
+        raise RuntimeError(f"{nome} deve ser maior que zero")
+    return valor
 
 
 def _load_settings() -> Settings:
+    app_env = os.getenv("APP_ENV", "dev")
+    if app_env not in AMBIENTES:
+        raise RuntimeError(f"APP_ENV deve ser um de {AMBIENTES}")
+
     secret = os.getenv("JWT_SECRET", "")
     if len(secret) < MIN_SECRET_LENGTH:
         raise RuntimeError(
@@ -32,22 +56,37 @@ def _load_settings() -> Settings:
             "e coloque em backend/.env"
         )
 
-    try:
-        expire_minutes = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))
-    except ValueError as exc:
-        raise RuntimeError("JWT_EXPIRE_MINUTES deve ser um número inteiro de minutos") from exc
-    if expire_minutes <= 0:
-        raise RuntimeError("JWT_EXPIRE_MINUTES deve ser maior que zero")
-
     origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
     if "*" in origins:
         raise RuntimeError("CORS_ORIGINS não pode conter '*': liste as origens do front explicitamente")
 
+    otp_provider = os.getenv("OTP_PROVIDER", "console")
+    if otp_provider not in PROVEDORES_OTP:
+        raise RuntimeError(f"OTP_PROVIDER deve ser um de {PROVEDORES_OTP}")
+    if otp_provider == "console" and app_env == "prod":
+        # The console provider prints login codes to the server log: never acceptable in production.
+        raise RuntimeError("OTP_PROVIDER=console não é permitido com APP_ENV=prod")
+
+    whatsapp_token = os.getenv("WHATSAPP_TOKEN", "")
+    whatsapp_phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+    whatsapp_template = os.getenv("WHATSAPP_TEMPLATE", "")
+    if otp_provider == "whatsapp" and not (whatsapp_token and whatsapp_phone_number_id and whatsapp_template):
+        raise RuntimeError(
+            "OTP_PROVIDER=whatsapp exige WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID e WHATSAPP_TEMPLATE"
+        )
+
     return Settings(
+        app_env=app_env,
         jwt_secret=secret,
         jwt_algorithm="HS256",
-        jwt_expire_minutes=expire_minutes,
+        jwt_expire_minutes=_int_positivo("JWT_EXPIRE_MINUTES", "480"),
+        jwt_cliente_expire_dias=_int_positivo("JWT_CLIENTE_EXPIRE_DIAS", "30"),
         cors_origins=origins,
+        otp_provider=otp_provider,
+        otp_expire_minutes=_int_positivo("OTP_EXPIRE_MINUTES", "10"),
+        whatsapp_token=whatsapp_token,
+        whatsapp_phone_number_id=whatsapp_phone_number_id,
+        whatsapp_template=whatsapp_template,
     )
 
 
