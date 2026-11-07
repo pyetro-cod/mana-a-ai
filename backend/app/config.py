@@ -21,6 +21,7 @@ PROVEDORES_OTP = ("console", "whatsapp")
 @dataclass(frozen=True)
 class Settings:
     app_env: str
+    database_url: str
     jwt_secret: str
     jwt_algorithm: str
     jwt_expire_minutes: int
@@ -41,6 +42,16 @@ def _int_positivo(nome: str, padrao: str) -> int:
     if valor <= 0:
         raise RuntimeError(f"{nome} deve ser maior que zero")
     return valor
+
+
+def _database_url() -> str:
+    url = os.getenv("DATABASE_URL", "sqlite:///./mana.db")
+    # Supabase/Heroku-style URLs use the bare "postgres(ql)://" scheme; SQLAlchemy needs
+    # the driver spelled out to pick psycopg 3 instead of the legacy psycopg2.
+    for prefixo in ("postgres://", "postgresql://"):
+        if url.startswith(prefixo):
+            return "postgresql+psycopg://" + url[len(prefixo):]
+    return url
 
 
 def _load_settings() -> Settings:
@@ -75,8 +86,14 @@ def _load_settings() -> Settings:
             "OTP_PROVIDER=whatsapp exige WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID e WHATSAPP_TEMPLATE"
         )
 
+    database_url = _database_url()
+    if os.getenv("VERCEL") and database_url.startswith("sqlite"):
+        # Vercel's filesystem is ephemeral: a SQLite file there would silently lose every balance.
+        raise RuntimeError("Na Vercel é obrigatório definir DATABASE_URL apontando para o Postgres")
+
     return Settings(
         app_env=app_env,
+        database_url=database_url,
         jwt_secret=secret,
         jwt_algorithm="HS256",
         jwt_expire_minutes=_int_positivo("JWT_EXPIRE_MINUTES", "480"),

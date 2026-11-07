@@ -1,11 +1,20 @@
-import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.pool import NullPool
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mana.db")
+from .config import settings
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+if settings.database_url.startswith("sqlite"):
+    engine = create_engine(settings.database_url, connect_args={"check_same_thread": False})
+else:
+    # Serverless (Vercel) + Supabase transaction pooler: the pooler already pools
+    # connections, so each function invocation opens and closes its own (NullPool), and
+    # prepared statements are disabled because they don't survive across pooled sessions.
+    engine = create_engine(
+        settings.database_url,
+        poolclass=NullPool,
+        connect_args={"prepare_threshold": None},
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

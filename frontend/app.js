@@ -1,5 +1,5 @@
-// Base da API local. Trocar pela URL de produção quando o backend for hospedado.
-const API_BASE = 'http://127.0.0.1:8000';
+// Definido em config.js (API local ou online, conforme onde o app foi aberto).
+const API_BASE = window.API_BASE;
 
 function show(id, btn){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
