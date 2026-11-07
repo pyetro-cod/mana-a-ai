@@ -12,6 +12,25 @@ function formatData(iso){
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 
+/* ================= DOM seguro =================
+   Nada vindo da API passa por innerHTML: os elementos são criados aqui e o texto
+   entra por textContent, que nunca é interpretado como HTML. */
+function el(tag, { className, text, style, attrs } = {}, children = []){
+  const node = document.createElement(tag);
+  if(className) node.className = className;
+  if(text !== undefined) node.textContent = text;
+  if(style) Object.assign(node.style, style);
+  if(attrs) Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+  children.forEach(c => node.appendChild(c));
+  return node;
+}
+
+function renderLista(container, nodes, mensagemVazia, classeVazia){
+  container.replaceChildren(...(nodes.length
+    ? nodes
+    : [el('div', { className: classeVazia, text: mensagemVazia, style: { color: 'var(--cream-dim)', fontSize: '13px' } })]));
+}
+
 /* ================= Caixa: autenticação ================= */
 let caixaToken = localStorage.getItem('manaCaixaToken') || null;
 let caixaPerfil = localStorage.getItem('manaCaixaPerfil') || null;
@@ -217,39 +236,40 @@ async function carregarProdutos(){
     if(!res.ok) throw new Error('erro ao carregar produtos');
     const produtos = await res.json();
 
-    grid.innerHTML = produtos.length
-      ? produtos.map(p => `
-          <div class="product-btn" onclick="lancarTransacao('credito', ${p.valor_creditos}, '${p.nome.replace(/'/g, "\\'")}')">
-            <div class="pname">${p.nome}</div>
-            <div class="pcred">+${p.valor_creditos} crédito${p.valor_creditos > 1 ? 's' : ''}</div>
-          </div>
-        `).join('')
-      : '<div style="color:var(--cream-dim); font-size:13px;">Nenhum produto cadastrado ainda.</div>';
+    const botoes = produtos.map(p => {
+      const btn = el('div', { className: 'product-btn' }, [
+        el('div', { className: 'pname', text: p.nome }),
+        el('div', { className: 'pcred', text: `+${p.valor_creditos} crédito${p.valor_creditos > 1 ? 's' : ''}` }),
+      ]);
+      btn.addEventListener('click', () => lancarTransacao('credito', p.valor_creditos, p.nome));
+      return btn;
+    });
+    renderLista(grid, botoes, 'Nenhum produto cadastrado ainda.');
 
     if(caixaPerfil === 'admin') renderAdminProdutos(produtos);
   }catch(e){
-    grid.innerHTML = '<div style="color:var(--yellow); font-size:13px;">Não consegui carregar os produtos.</div>';
+    grid.replaceChildren(el('div', { text: 'Não consegui carregar os produtos.', style: { color: 'var(--yellow)', fontSize: '13px' } }));
   }
 }
 
 function renderAdminProdutos(produtos){
   const lista = document.getElementById('listaProdutosAdmin');
-  lista.innerHTML = produtos.map(p => `
-    <div class="admin-produto-row">
-      <input class="nome" id="admNome-${p.id}" value="${p.nome}">
-      <input class="valor" type="number" min="1" id="admValor-${p.id}" value="${p.valor_creditos}">
-      <button onclick="salvarProduto('${p.id}')">Salvar</button>
-    </div>
-  `).join('');
+  lista.replaceChildren(...produtos.map(p => {
+    const inputNome = el('input', { className: 'nome' });
+    inputNome.value = p.nome;
+    const inputValor = el('input', { className: 'valor', attrs: { type: 'number', min: '1' } });
+    inputValor.value = p.valor_creditos;
+    const btn = el('button', { text: 'Salvar' });
+    btn.addEventListener('click', () => salvarProduto(p.id, inputNome.value.trim(), parseInt(inputValor.value, 10)));
+    return el('div', { className: 'admin-produto-row' }, [inputNome, inputValor, btn]);
+  }));
 }
 
-async function salvarProduto(id){
+async function salvarProduto(id, nome, valor){
   const feedback = document.getElementById('adminFeedback');
-  const nome = document.getElementById(`admNome-${id}`).value.trim();
-  const valor = parseInt(document.getElementById(`admValor-${id}`).value, 10);
 
   try{
-    const res = await fetch(`${API_BASE}/produtos/${id}`, {
+    const res = await fetch(`${API_BASE}/produtos/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ nome, valor_creditos: valor })
@@ -304,20 +324,19 @@ async function adicionarProduto(){
 }
 
 async function carregarHistoricoCaixa(carteiraId){
-  // GET /carteira/{id} não exige token — é a mesma rota usada pela auto-identificação do cliente.
   const container = document.getElementById('deskTxList');
   try{
-    const res = await fetch(`${API_BASE}/carteira/${carteiraId}`);
+    const res = await fetch(`${API_BASE}/carteira/${encodeURIComponent(carteiraId)}`, { headers: authHeaders() });
+    if(res.status === 401){ logoutCaixa(); return; }
     if(!res.ok) return;
     const extrato = await res.json();
-    container.innerHTML = extrato.historico.length
-      ? extrato.historico.map(h => `
-          <div class="desk-tx">
-            <span>${h.tipo === 'credito' ? 'Crédito' : 'Débito'} · ${formatData(h.criado_em)}</span>
-            <span style="color:${h.tipo === 'credito' ? 'var(--green)' : 'var(--yellow)'}; font-weight:700">${h.tipo === 'credito' ? '+' : '−'}${h.valor}</span>
-          </div>
-        `).join('')
-      : '<div style="color:var(--cream-dim); font-size:13px;">Sem lançamentos ainda.</div>';
+    renderLista(container, extrato.historico.map(h => {
+      const credito = h.tipo === 'credito';
+      return el('div', { className: 'desk-tx' }, [
+        el('span', { text: `${credito ? 'Crédito' : 'Débito'} · ${formatData(h.criado_em)}` }),
+        el('span', { text: `${credito ? '+' : '−'}${h.valor}`, style: { color: credito ? 'var(--green)' : 'var(--yellow)', fontWeight: '700' } }),
+      ]);
+    }), 'Sem lançamentos ainda.');
   }catch(e){ /* já sinalizamos erro de conexão na busca */ }
 }
 
@@ -370,7 +389,8 @@ async function carregarSaldoCliente(){
     const cliente = await resCliente.json();
     document.getElementById('clienteSaldoNum').textContent = cliente.carteira.saldo;
 
-    const resExtrato = await fetch(`${API_BASE}/carteira/${cliente.carteira.id}`);
+    const resExtrato = await fetch(`${API_BASE}/clientes/me/extrato?telefone=${encodeURIComponent(clienteTelefone)}`);
+    if(!resExtrato.ok) throw new Error('extrato indisponível');
     const extrato = await resExtrato.json();
     const ultimo = extrato.historico[0];
     document.getElementById('clienteHeroFoot').textContent = ultimo
@@ -378,14 +398,16 @@ async function carregarSaldoCliente(){
       : 'Nenhum lançamento ainda';
 
     const list = document.getElementById('clienteTxList');
-    list.innerHTML = extrato.historico.length
-      ? extrato.historico.map(h => `
-          <div class="tx">
-            <div><div class="tx-name">${h.tipo === 'credito' ? 'Crédito' : 'Débito'}</div><div class="tx-date">${formatData(h.criado_em)}</div></div>
-            <div class="tx-val ${h.tipo === 'credito' ? 'credit' : 'debit'}">${h.tipo === 'credito' ? '+' : '−'}${h.valor}</div>
-          </div>
-        `).join('')
-      : '<div class="tx"><div class="tx-name" style="color:var(--cream-dim)">Nenhum lançamento ainda.</div></div>';
+    renderLista(list, extrato.historico.map(h => {
+      const credito = h.tipo === 'credito';
+      return el('div', { className: 'tx' }, [
+        el('div', {}, [
+          el('div', { className: 'tx-name', text: credito ? 'Crédito' : 'Débito' }),
+          el('div', { className: 'tx-date', text: formatData(h.criado_em) }),
+        ]),
+        el('div', { className: `tx-val ${credito ? 'credit' : 'debit'}`, text: `${credito ? '+' : '−'}${h.valor}` }),
+      ]);
+    }), 'Nenhum lançamento ainda.', 'tx');
   }catch(e){
     document.getElementById('clienteHeroFoot').textContent = `API offline em ${API_BASE}`;
     document.getElementById('clienteSaldoNum').textContent = '—';

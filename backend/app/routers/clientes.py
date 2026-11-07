@@ -4,27 +4,35 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from ..auth_utils import get_caixa_atual
+from .carteira import montar_extrato
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
 
-@router.get("/me", response_model=schemas.ClienteOut)
-def meu_perfil(telefone: str, db: Session = Depends(get_db)):
-    """Auto-identificação do cliente pelo próprio telefone.
-
-    Sem autenticação por senha, de propósito: o cliente ainda não tem
-    credenciais reais (isso depende da decisão de QR/login que ficou em aberto).
-    Rota separada da /clientes usada pelo caixa, que exige token.
-    """
+def _cliente_por_telefone(db: Session, telefone: str) -> models.Usuario:
     usuario = db.query(models.Usuario).filter(
         models.Usuario.telefone == telefone,
         models.Usuario.perfil == "cliente",
     ).first()
-
     if not usuario or not usuario.carteira:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
-
     return usuario
+
+
+# NOTE: /me e /me/extrato identificam o cliente só pelo telefone, sem prova de que
+# ele é o dono do número. É um risco conhecido (LGPD) que a fase 3 fecha com login
+# por código no WhatsApp; até lá o app do cliente não deve ir para produção.
+@router.get("/me", response_model=schemas.ClienteOut)
+def meu_perfil(telefone: str, db: Session = Depends(get_db)):
+    """Auto-identificação do cliente pelo próprio telefone."""
+    return _cliente_por_telefone(db, telefone)
+
+
+@router.get("/me/extrato", response_model=schemas.ExtratoOut)
+def meu_extrato(telefone: str, db: Session = Depends(get_db)):
+    """Saldo e histórico do próprio cliente (app do cliente)."""
+    usuario = _cliente_por_telefone(db, telefone)
+    return montar_extrato(db, usuario.carteira)
 
 
 @router.get("", response_model=schemas.ClienteOut)
