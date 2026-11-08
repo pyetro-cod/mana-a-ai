@@ -1,14 +1,15 @@
 """Popula o banco com dados de exemplo para testar a API localmente.
-Rodar com: python seed.py
+Rodar depois de criar as tabelas:
+    alembic upgrade head
+    python seed.py
 """
 from passlib.context import CryptContext
 
-from app.database import SessionLocal, engine, Base
+from app.database import SessionLocal
 from app import models
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-Base.metadata.create_all(bind=engine)
 db = SessionLocal()
 
 produtos = [

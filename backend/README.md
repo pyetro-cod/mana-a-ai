@@ -8,6 +8,7 @@ API do programa de fidelidade. FastAPI + SQLAlchemy, SQLite por padrão (troque 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env    # depois preencha JWT_SECRET (comando de geração no próprio arquivo)
+alembic upgrade head    # cria/atualiza as tabelas (migrações)
 python seed.py          # cria produtos + cliente e caixa de teste
 uvicorn app.main:app --reload
 ```
@@ -22,6 +23,18 @@ python -m http.server 5500
 ```
 
 E acesse `http://localhost:5500`. A porta precisa estar em `CORS_ORIGINS` no `.env`.
+
+## Banco de dados e migrações
+
+As tabelas são criadas e alteradas pelo **Alembic** (pasta `migrations/`), nunca pelo código da API.
+
+```bash
+alembic upgrade head                                    # aplica as migrações pendentes
+alembic revision --autogenerate --rev-id 0002 -m "..."  # depois de mudar um modelo
+alembic current                                         # versão em que o banco está
+```
+
+Banco criado antes do Alembic (com `create_all`): marque a versão inicial uma vez com `alembic stamp 0001` e depois use `alembic upgrade head`. `tests/test_migracoes.py` falha se um modelo mudar sem migração correspondente.
 
 ## Testes
 
