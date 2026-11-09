@@ -28,7 +28,7 @@ def lancar_transacao(
 
     # A expired balance cannot be spent, and a manual credit counts as a purchase.
     momento = regras.agora()
-    regras.aplicar_expiracao(db, carteira, regras.configuracao(db), momento)
+    regras.atualizar_carteira(db, carteira, regras.configuracao(db), momento)
 
     if payload.tipo == "debito" and payload.valor > carteira.saldo:
         raise HTTPException(status_code=422, detail="Saldo insuficiente para esse débito")

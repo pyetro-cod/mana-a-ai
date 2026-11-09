@@ -66,6 +66,10 @@ Senhas só para desenvolvimento: troque antes de qualquer ambiente público.
 - `GET /clientes/me` e `GET /clientes/me/extrato` — dados, saldo, `vence_em` e histórico do cliente logado (token de cliente)
 - `POST /clientes/me/cupons` — usa um cupom (QR): credita, dá o bônus no 1º e renova o prazo do saldo. Recusas: 404 inexistente, 409 já usado, 410 vencido/cancelado, 429 limite do dia
 
+- `GET /clientes/me/premios` — prêmios ativos
+- `POST /clientes/me/resgates` — reserva os créditos e devolve o código de 6 dígitos (vale `validade_resgate_minutos`); pedir outro substitui o anterior. `GET /clientes/me/resgates/pendente` reabre o código; `POST /clientes/me/resgates/cancelar` devolve os créditos
+- `GET /resgates/{codigo}` e `POST /resgates/{codigo}/confirmar` — caixa/admin conferem e confirmam a entrega. Código vencido: 410 e os créditos voltam ao cliente
+
 ### Área do admin (`/admin/*`, só perfil admin)
 
 - `GET`/`PUT /admin/configuracao` — regras do programa (créditos por cupom, bônus, validades, expiração do saldo, cupons por dia)

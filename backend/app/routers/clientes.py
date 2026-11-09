@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .. import models, regras, schemas
+from .. import models, regras, resgates, schemas
 from ..database import get_db
 from ..auth_utils import get_caixa_atual, get_cliente_atual
 from .carteira import montar_extrato
@@ -15,13 +15,16 @@ STATUS_RECUSA = {
     "cupom_expirado": 410,
     "cupom_cancelado": 410,
     "limite_diario": 429,
+    "premio_inexistente": 404,
+    "saldo_insuficiente": 422,
 }
 
 
 @router.get("/me", response_model=schemas.ClienteOut)
 def meu_perfil(cliente: models.Usuario = Depends(get_cliente_atual), db: Session = Depends(get_db)):
     """Dados do cliente logado no app (identificado pelo token, não pelo telefone)."""
-    if regras.aplicar_expiracao(db, cliente.carteira, regras.configuracao(db)) or db.dirty:
+    regras.atualizar_carteira(db, cliente.carteira, regras.configuracao(db))
+    if db.dirty or db.new:
         db.commit()
         db.refresh(cliente)
     return cliente
@@ -47,6 +50,53 @@ def usar_cupom(
         db.rollback()
         raise HTTPException(status_code=STATUS_RECUSA[recusa.motivo], detail=recusa.motivo)
     return resultado
+
+
+@router.get("/me/premios", response_model=list[schemas.PremioOut])
+def premios_disponiveis(_cliente: models.Usuario = Depends(get_cliente_atual), db: Session = Depends(get_db)):
+    """Catálogo que o cliente vê: só prêmios ativos, do mais barato ao mais caro."""
+    return (db.query(models.Premio).filter(models.Premio.ativo.is_(True))
+            .order_by(models.Premio.custo_creditos).all())
+
+
+def _resgate_out(resgate: models.Resgate, carteira: models.Carteira) -> schemas.ResgateOut:
+    return schemas.ResgateOut(codigo=resgate.codigo, premio=resgate.premio.nome,
+                              custo_creditos=resgate.custo_creditos, expira_em=resgate.expira_em,
+                              novo_saldo=carteira.saldo)
+
+
+@router.post("/me/resgates", response_model=schemas.ResgateOut, status_code=201)
+def pedir_resgate(
+    payload: schemas.SolicitarResgateRequest,
+    cliente: models.Usuario = Depends(get_cliente_atual),
+    db: Session = Depends(get_db),
+):
+    """Reserva os créditos e devolve o código de 6 dígitos para mostrar no caixa."""
+    try:
+        resgate = resgates.solicitar(db, cliente, payload.premio_id)
+        db.commit()
+    except resgates.ResgateRecusado as recusa:
+        db.rollback()
+        raise HTTPException(status_code=STATUS_RECUSA[recusa.motivo], detail=recusa.motivo)
+    db.refresh(cliente)
+    return _resgate_out(resgate, cliente.carteira)
+
+
+@router.get("/me/resgates/pendente", response_model=schemas.ResgateOut | None)
+def resgate_em_aberto(cliente: models.Usuario = Depends(get_cliente_atual), db: Session = Depends(get_db)):
+    """Código ainda válido (para o app reabrir a tela do código), ou null."""
+    regras.atualizar_carteira(db, cliente.carteira, regras.configuracao(db))
+    db.commit()
+    resgate = resgates.pendente_do_cliente(db, cliente.carteira)
+    return _resgate_out(resgate, cliente.carteira) if resgate else None
+
+
+@router.post("/me/resgates/cancelar", response_model=schemas.CancelarResgateOut)
+def cancelar_resgate(cliente: models.Usuario = Depends(get_cliente_atual), db: Session = Depends(get_db)):
+    devolvido = resgates.cancelar(db, cliente)
+    db.commit()
+    db.refresh(cliente)
+    return schemas.CancelarResgateOut(devolvido=devolvido, novo_saldo=cliente.carteira.saldo)
 
 
 @router.get("", response_model=schemas.ClienteOut)

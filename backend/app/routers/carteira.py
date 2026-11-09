@@ -13,7 +13,8 @@ HISTORICO_LIMITE = 20
 def montar_extrato(db: Session, carteira: models.Carteira) -> schemas.ExtratoOut:
     """Saldo + últimas transações. Aplica a expiração antes, para nunca mostrar saldo vencido."""
     config = regras.configuracao(db)
-    if regras.aplicar_expiracao(db, carteira, config) or db.dirty or db.new:
+    regras.atualizar_carteira(db, carteira, config)
+    if db.dirty or db.new:
         db.commit()
         db.refresh(carteira)
     historico = (

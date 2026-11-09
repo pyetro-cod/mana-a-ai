@@ -266,3 +266,33 @@ class PremioOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ---------- resgate de prêmio ----------
+
+class SolicitarResgateRequest(BaseModel):
+    premio_id: str = Field(..., min_length=1, max_length=64)
+
+
+class ResgateOut(BaseModel):
+    """What the customer shows at the counter."""
+    codigo: str
+    premio: str
+    custo_creditos: int
+    expira_em: datetime
+    novo_saldo: int
+
+
+class CancelarResgateOut(BaseModel):
+    devolvido: int
+    novo_saldo: int
+
+
+class ResgateCaixaOut(BaseModel):
+    """What the cashier sees before handing over the prize."""
+    codigo: str
+    cliente: str
+    premio: str
+    custo_creditos: int
+    expira_em: datetime
+    status: str

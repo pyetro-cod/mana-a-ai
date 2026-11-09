@@ -89,6 +89,60 @@ def vence_em(carteira: models.Carteira, config: models.Configuracao):
     return carteira.ultima_compra_em + timedelta(days=config.dias_expiracao_saldo)
 
 
+def estornar_resgates_vencidos(db: Session, carteira: models.Carteira,
+                               momento: datetime | None = None) -> int:
+    """Código de resgate que venceu sem o caixa confirmar: os créditos reservados voltam.
+
+    Mesmo princípio da expiração do saldo: roda quando alguém olha a carteira.
+    Devolve quanto foi estornado.
+    """
+    momento = momento or agora()
+    vencidos = (db.query(models.Resgate)
+                .filter(models.Resgate.carteira_id == carteira.id,
+                        models.Resgate.status == "pendente",
+                        models.Resgate.expira_em <= momento)
+                .all())
+    return sum(r.custo_creditos for r in vencidos
+               if estornar_resgate(db, carteira, r, "expirado", r.expira_em))
+
+
+def estornar_resgate(db: Session, carteira: models.Carteira, resgate: models.Resgate,
+                     novo_status: str, quando: datetime) -> bool:
+    """Fecha um resgate pendente devolvendo os créditos. False se ele já não estava pendente.
+
+    Atualização condicional, como no cupom: se o caixa confirmar no mesmo instante em
+    que o cliente cancela, só uma das duas mudanças acontece, nunca prêmio + estorno.
+    """
+    if not mudar_status_se_pendente(db, resgate, novo_status):
+        return False
+    carteira.saldo += resgate.custo_creditos
+    db.add(models.Transacao(carteira_id=carteira.id, tipo="credito", valor=resgate.custo_creditos,
+                            motivo="estorno_resgate", resgate_id=resgate.id, criado_em=quando))
+    return True
+
+
+def mudar_status_se_pendente(db: Session, resgate: models.Resgate, novo_status: str, **campos) -> bool:
+    resultado = db.execute(
+        update(models.Resgate)
+        .where(models.Resgate.id == resgate.id, models.Resgate.status == "pendente")
+        .values(status=novo_status, **campos)
+        .execution_options(synchronize_session="fetch")
+    )
+    return resultado.rowcount == 1
+
+
+def atualizar_carteira(db: Session, carteira: models.Carteira, config: models.Configuracao,
+                       momento: datetime | None = None) -> None:
+    """Põe a carteira em dia antes de mostrar ou mexer no saldo.
+
+    Ordem: primeiro devolve resgates vencidos, depois expira o saldo. Assim um
+    estorno de créditos que já estavam vencidos também expira, em vez de escapar.
+    """
+    momento = momento or agora()
+    estornar_resgates_vencidos(db, carteira, momento)
+    aplicar_expiracao(db, carteira, config, momento)
+
+
 def aplicar_expiracao(db: Session, carteira: models.Carteira, config: models.Configuracao,
                       momento: datetime | None = None) -> int:
     """Zera o saldo vencido por inatividade, registrando um débito `expiracao`.
@@ -167,6 +221,7 @@ def resgatar_cupom(db: Session, cliente: models.Usuario, codigo: str,
 
     # Saldo vencido expira ANTES do crédito novo: senão a compra de hoje
     # "ressuscitaria" créditos que já tinham vencido.
+    estornar_resgates_vencidos(db, carteira, momento)
     expirado = aplicar_expiracao(db, carteira, config, momento)
 
     ja_ganhou_bonus = (db.query(models.Transacao)
