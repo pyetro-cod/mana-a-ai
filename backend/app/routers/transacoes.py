@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .. import models, schemas
+from .. import models, regras, schemas
 from ..database import get_db
 from ..auth_utils import get_caixa_atual
 
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/transacoes", tags=["transacoes"])
 def lancar_transacao(
     payload: schemas.TransacaoCreate,
     db: Session = Depends(get_db),
-    _usuario_atual: models.Usuario = Depends(get_caixa_atual),
+    operador: models.Usuario = Depends(get_caixa_atual),
 ):
     carteira = db.query(models.Carteira).filter(
         models.Carteira.id == payload.carteira_id
@@ -26,6 +26,10 @@ def lancar_transacao(
         if not produto:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
 
+    # A expired balance cannot be spent, and a manual credit counts as a purchase.
+    momento = regras.agora()
+    regras.aplicar_expiracao(db, carteira, regras.configuracao(db), momento)
+
     if payload.tipo == "debito" and payload.valor > carteira.saldo:
         raise HTTPException(status_code=422, detail="Saldo insuficiente para esse débito")
 
@@ -33,6 +37,7 @@ def lancar_transacao(
     try:
         if payload.tipo == "credito":
             carteira.saldo += payload.valor
+            carteira.ultima_compra_em = momento
         else:
             carteira.saldo -= payload.valor
 
@@ -41,6 +46,9 @@ def lancar_transacao(
             produto_id=payload.produto_id,
             tipo=payload.tipo,
             valor=payload.valor,
+            motivo="manual",
+            operador_id=operador.id,
+            criado_em=momento,
         )
         db.add(transacao)
         db.add(carteira)

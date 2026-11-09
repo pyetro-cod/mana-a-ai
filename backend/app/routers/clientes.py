@@ -1,17 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .. import models, schemas
+from .. import models, regras, schemas
 from ..database import get_db
 from ..auth_utils import get_caixa_atual, get_cliente_atual
 from .carteira import montar_extrato
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
+# The detail is a stable code the app turns into a friendly message.
+STATUS_RECUSA = {
+    "cupom_inexistente": 404,
+    "cupom_ja_usado": 409,
+    "cupom_expirado": 410,
+    "limite_diario": 429,
+}
+
 
 @router.get("/me", response_model=schemas.ClienteOut)
-def meu_perfil(cliente: models.Usuario = Depends(get_cliente_atual)):
+def meu_perfil(cliente: models.Usuario = Depends(get_cliente_atual), db: Session = Depends(get_db)):
     """Dados do cliente logado no app (identificado pelo token, não pelo telefone)."""
+    if regras.aplicar_expiracao(db, cliente.carteira, regras.configuracao(db)) or db.dirty:
+        db.commit()
+        db.refresh(cliente)
     return cliente
 
 
@@ -19,6 +30,22 @@ def meu_perfil(cliente: models.Usuario = Depends(get_cliente_atual)):
 def meu_extrato(cliente: models.Usuario = Depends(get_cliente_atual), db: Session = Depends(get_db)):
     """Saldo e histórico do cliente logado."""
     return montar_extrato(db, cliente.carteira)
+
+
+@router.post("/me/cupons", response_model=schemas.UsarCupomOut)
+def usar_cupom(
+    payload: schemas.UsarCupomRequest,
+    cliente: models.Usuario = Depends(get_cliente_atual),
+    db: Session = Depends(get_db),
+):
+    """O cliente escaneia o QR do cupom e o crédito cai na hora (com o bônus, no 1º)."""
+    try:
+        resultado = regras.resgatar_cupom(db, cliente, payload.codigo)
+        db.commit()
+    except regras.CupomRecusado as recusa:
+        db.rollback()
+        raise HTTPException(status_code=STATUS_RECUSA[recusa.motivo], detail=recusa.motivo)
+    return resultado
 
 
 @router.get("", response_model=schemas.ClienteOut)

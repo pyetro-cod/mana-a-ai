@@ -149,6 +149,7 @@ class TransacaoOut(BaseModel):
 class HistoricoItem(BaseModel):
     tipo: str
     valor: int
+    motivo: str
     criado_em: datetime
     produto_id: Optional[str] = None
 
@@ -158,4 +159,24 @@ class HistoricoItem(BaseModel):
 
 class ExtratoOut(BaseModel):
     saldo: int
+    # When the current balance expires (None if there is nothing to expire).
+    vence_em: Optional[datetime] = None
     historico: List[HistoricoItem]
+
+
+class UsarCupomRequest(BaseModel):
+    # What the QR encodes. Case and surrounding spaces are normalised before lookup.
+    codigo: str = Field(..., min_length=6, max_length=32, pattern=r"^\s*[A-Za-z0-9-]+\s*$")
+
+    @field_validator("codigo")
+    @classmethod
+    def normalizar(cls, v):
+        return v.strip().upper()
+
+
+class UsarCupomOut(BaseModel):
+    creditos: int
+    bonus: int
+    expirado: int
+    novo_saldo: int
+    vence_em: Optional[datetime] = None

@@ -68,7 +68,7 @@ def test_autocadastro_de_telefone_novo(client, codigos_enviados):
     assert res.json()["novo_cadastro"] is True
 
     extrato = client.get("/clientes/me/extrato", headers=auth(res.json()["token"])).json()
-    assert extrato == {"saldo": 0, "historico": []}
+    assert extrato == {"saldo": 0, "vence_em": None, "historico": []}
 
     db = SessionLocal()
     try:
