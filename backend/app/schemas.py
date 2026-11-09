@@ -171,7 +171,8 @@ class UsarCupomRequest(BaseModel):
     @field_validator("codigo")
     @classmethod
     def normalizar(cls, v):
-        return v.strip().upper()
+        # Printed as ABCDE-FGHJK for readability; the stored code has no hyphen.
+        return v.strip().upper().replace("-", "")
 
 
 class UsarCupomOut(BaseModel):
@@ -180,3 +181,88 @@ class UsarCupomOut(BaseModel):
     expirado: int
     novo_saldo: int
     vence_em: Optional[datetime] = None
+
+
+# ---------- admin: regras do programa ----------
+
+class ConfiguracaoOut(BaseModel):
+    creditos_por_cupom: int
+    bonus_boas_vindas: int
+    validade_cupom_dias: int
+    dias_expiracao_saldo: int
+    validade_resgate_minutos: int
+    max_cupons_por_dia: int
+    atualizado_em: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ConfiguracaoUpdate(BaseModel):
+    """Each field is optional; the bounds stop a typo (e.g. 5000 credits) from going live."""
+    creditos_por_cupom: Optional[int] = Field(None, ge=1, le=1000)
+    bonus_boas_vindas: Optional[int] = Field(None, ge=0, le=1000)
+    validade_cupom_dias: Optional[int] = Field(None, ge=1, le=365)
+    dias_expiracao_saldo: Optional[int] = Field(None, ge=1, le=365)
+    validade_resgate_minutos: Optional[int] = Field(None, ge=1, le=60)
+    max_cupons_por_dia: Optional[int] = Field(None, ge=1, le=10)
+
+
+# ---------- admin: lotes de cupons ----------
+
+class LoteCreate(BaseModel):
+    quantidade: int = Field(..., ge=1, le=200)
+
+
+class LoteOut(BaseModel):
+    id: str
+    quantidade: int
+    creditos: int
+    criado_em: datetime
+    expira_em: datetime
+    usados: int
+    cancelado: bool
+
+
+class CupomImpressao(BaseModel):
+    codigo: str          # grouped for humans: ABCDE-FGHJK
+    url: str             # what the QR encodes
+    qr: str              # data:image/svg+xml URI, safe to use as <img src>
+    usado: bool
+
+
+class LoteDetalhe(LoteOut):
+    cupons: List[CupomImpressao]
+
+
+# ---------- admin: prêmios ----------
+
+class PremioCreate(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=80)
+    custo_creditos: int = Field(..., ge=1, le=100000)
+
+    @field_validator("nome")
+    @classmethod
+    def nome_valido(cls, v):
+        return validar_nome(v)
+
+
+class PremioUpdate(BaseModel):
+    nome: Optional[str] = Field(None, min_length=2, max_length=80)
+    custo_creditos: Optional[int] = Field(None, ge=1, le=100000)
+    ativo: Optional[bool] = None
+
+    @field_validator("nome")
+    @classmethod
+    def nome_valido(cls, v):
+        return v if v is None else validar_nome(v)
+
+
+class PremioOut(BaseModel):
+    id: str
+    nome: str
+    custo_creditos: int
+    ativo: bool
+
+    class Config:
+        from_attributes = True

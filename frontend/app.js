@@ -41,6 +41,7 @@ function atualizarTelaCaixa(){
   document.getElementById('caixaLoginBox').style.display = logado ? 'none' : 'grid';
   document.getElementById('caixaPainel').style.display = logado ? 'grid' : 'none';
   document.getElementById('adminProdutos').style.display = (logado && caixaPerfil === 'admin') ? 'block' : 'none';
+  document.getElementById('adminLink').style.display = (logado && caixaPerfil === 'admin') ? 'inline-block' : 'none';
   if(logado) carregarProdutos();
 }
 

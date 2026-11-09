@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import auth, clientes, transacoes, carteira, produtos
+from .routers import admin, auth, clientes, transacoes, carteira, produtos
 
 # Schema is managed by Alembic migrations: run `alembic upgrade head` before starting the API.
 
@@ -23,6 +23,7 @@ app.include_router(clientes.router)
 app.include_router(transacoes.router)
 app.include_router(carteira.router)
 app.include_router(produtos.router)
+app.include_router(admin.router)
 
 
 @app.get("/health")

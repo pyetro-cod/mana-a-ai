@@ -49,8 +49,11 @@ Rodam num banco SQLite temporário (não tocam no `mana.db`). `tests/test_login_
 
 | Perfil | Telefone | Senha |
 |---|---|---|
-| Cliente (Ana Souza) | 83999998888 | — (cliente não loga no MVP) |
+| Cliente (Ana Souza) | 83999998888 | — (entra por código no app) |
 | Caixa | 83988887777 | senha1234 |
+| Admin (dono) | 83977776666 | senha1234 — abre `admin.html` |
+
+Senhas só para desenvolvimento: troque antes de qualquer ambiente público.
 
 ## Endpoints
 
@@ -60,7 +63,16 @@ Rodam num banco SQLite temporário (não tocam no `mana.db`). `tests/test_login_
 - `GET /carteira/{id}` — saldo e histórico (caixa/admin, exige token)
 - `POST /auth/cliente/codigo` — envia código de 6 dígitos ao telefone do cliente (10 min, 1/min e 5/h por telefone)
 - `POST /auth/cliente/entrar` — confere o código; telefone novo exige `nome` + `aceite_termos` (autocadastro); devolve JWT de cliente (30 dias)
-- `GET /clientes/me` e `GET /clientes/me/extrato` — dados, saldo e histórico do cliente logado (token de cliente)
+- `GET /clientes/me` e `GET /clientes/me/extrato` — dados, saldo, `vence_em` e histórico do cliente logado (token de cliente)
+- `POST /clientes/me/cupons` — usa um cupom (QR): credita, dá o bônus no 1º e renova o prazo do saldo. Recusas: 404 inexistente, 409 já usado, 410 vencido/cancelado, 429 limite do dia
+
+### Área do admin (`/admin/*`, só perfil admin)
+
+- `GET`/`PUT /admin/configuracao` — regras do programa (créditos por cupom, bônus, validades, expiração do saldo, cupons por dia)
+- `GET`/`POST /admin/lotes` — lista e gera lotes de cupons (1 a 200); `GET /admin/lotes/{id}` devolve os QRs para a folha de impressão; `POST /admin/lotes/{id}/cancelar` invalida uma folha perdida
+- `GET`/`POST /admin/premios`, `PUT /admin/premios/{id}` — catálogo de prêmios (desativar em vez de excluir)
+
+O QR aponta para `APP_PUBLIC_URL/?cupom=CODIGO`.
 
 ### Código de acesso em desenvolvimento
 
@@ -74,7 +86,7 @@ Em produção (`APP_ENV=prod`) isso é bloqueado: é preciso `OTP_PROVIDER=whats
 
 ## Variáveis de ambiente
 
-Ver `.env.example`. Principais: `JWT_SECRET` (obrigatória), `JWT_EXPIRE_MINUTES`, `CORS_ORIGINS`.
+Ver `.env.example`. Principais: `JWT_SECRET` (obrigatória), `JWT_EXPIRE_MINUTES`, `CORS_ORIGINS`, `APP_PUBLIC_URL` (endereço do app gravado no QR dos cupons; `https://` fora de localhost).
 
 
 - `DATABASE_URL` — padrão `sqlite:///./mana.db`. Para Postgres: `postgresql://user:senha@host:5432/mana`

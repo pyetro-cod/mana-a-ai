@@ -13,6 +13,7 @@ STATUS_RECUSA = {
     "cupom_inexistente": 404,
     "cupom_ja_usado": 409,
     "cupom_expirado": 410,
+    "cupom_cancelado": 410,
     "limite_diario": 429,
 }
 

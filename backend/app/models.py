@@ -126,6 +126,8 @@ class LoteCupom(Base):
     criado_por = Column(String, ForeignKey("usuarios.id"), nullable=False)
     criado_em = Column(DateTime, nullable=False, default=datetime.utcnow)
     expira_em = Column(DateTime, nullable=False)
+    # Set when a printed sheet is lost or stolen: its unused coupons stop working.
+    cancelado_em = Column(DateTime, nullable=True)
 
     cupons = relationship("Cupom", back_populates="lote")
 

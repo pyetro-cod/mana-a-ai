@@ -3,6 +3,7 @@
 Todas as funções recebem a sessão e NÃO fazem commit: quem chama decide quando
 gravar, para que saldo e histórico (ledger) mudem juntos numa única transação.
 """
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import update
@@ -15,12 +16,17 @@ from . import models
 FUSO_LOJA = timezone(timedelta(hours=-3))
 
 
+# No 0/O, 1/I/L: a customer typing the code by hand cannot confuse them.
+ALFABETO_CUPOM = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+TAMANHO_CUPOM = 10  # 31^10 ≈ 8 * 10^14 possibilities: guessing a valid one is hopeless
+
+
 class CupomRecusado(Exception):
     """Cupom não pode ser usado. `motivo` vai para o app traduzir em mensagem."""
 
     def __init__(self, motivo: str):
         super().__init__(motivo)
-        self.motivo = motivo  # cupom_inexistente | cupom_ja_usado | cupom_expirado | limite_diario
+        self.motivo = motivo  # cupom_inexistente | cupom_ja_usado | cupom_expirado | cupom_cancelado | limite_diario
 
 
 def agora() -> datetime:
@@ -33,6 +39,40 @@ def inicio_do_dia_na_loja(momento: datetime) -> datetime:
     local = momento.replace(tzinfo=timezone.utc).astimezone(FUSO_LOJA)
     meia_noite = local.replace(hour=0, minute=0, second=0, microsecond=0)
     return meia_noite.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def gerar_codigo_cupom() -> str:
+    # `secrets`, not `random`: random's sequence can be predicted from a few outputs.
+    return "".join(secrets.choice(ALFABETO_CUPOM) for _ in range(TAMANHO_CUPOM))
+
+
+def formatar_codigo(codigo: str) -> str:
+    """ABCDEFGHJK -> ABCDE-FGHJK (only for printing; the app strips the hyphen)."""
+    meio = len(codigo) // 2
+    return f"{codigo[:meio]}-{codigo[meio:]}"
+
+
+def gerar_lote(db: Session, admin: models.Usuario, quantidade: int,
+               momento: datetime | None = None) -> models.LoteCupom:
+    """Cria um lote com códigos únicos, usando as regras atuais (créditos e validade). Sem commit."""
+    momento = momento or agora()
+    config = configuracao(db)
+    expira = momento + timedelta(days=config.validade_cupom_dias)
+
+    codigos: set[str] = set()
+    while len(codigos) < quantidade:
+        faltam = {gerar_codigo_cupom() for _ in range(quantidade - len(codigos))}
+        ja_existem = {c for (c,) in db.query(models.Cupom.codigo).filter(models.Cupom.codigo.in_(faltam))}
+        codigos |= faltam - ja_existem
+
+    lote = models.LoteCupom(estabelecimento_id=models.ESTABELECIMENTO_PADRAO, quantidade=quantidade,
+                            creditos=config.creditos_por_cupom, criado_por=admin.id,
+                            criado_em=momento, expira_em=expira)
+    db.add(lote)
+    db.flush()
+    db.add_all(models.Cupom(lote_id=lote.id, codigo=c, creditos=lote.creditos, expira_em=expira)
+               for c in sorted(codigos))
+    return lote
 
 
 def configuracao(db: Session) -> models.Configuracao:
@@ -101,6 +141,8 @@ def resgatar_cupom(db: Session, cliente: models.Usuario, codigo: str,
         raise CupomRecusado("cupom_inexistente")
     if cupom.usado_em is not None:
         raise CupomRecusado("cupom_ja_usado")
+    if cupom.lote.cancelado_em is not None:
+        raise CupomRecusado("cupom_cancelado")
     if momento >= cupom.expira_em:
         raise CupomRecusado("cupom_expirado")
 

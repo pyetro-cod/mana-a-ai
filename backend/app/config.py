@@ -32,6 +32,7 @@ class Settings:
     whatsapp_token: str
     whatsapp_phone_number_id: str
     whatsapp_template: str
+    app_public_url: str
 
 
 def _int_positivo(nome: str, padrao: str) -> int:
@@ -91,6 +92,11 @@ def _load_settings() -> Settings:
         # Vercel's filesystem is ephemeral: a SQLite file there would silently lose every balance.
         raise RuntimeError("Na Vercel é obrigatório definir DATABASE_URL apontando para o Postgres")
 
+    # Where the customer app lives: printed coupon QRs point here (?cupom=CODE).
+    app_public_url = os.getenv("APP_PUBLIC_URL", "http://localhost:5500").rstrip("/")
+    if not app_public_url.startswith(("https://", "http://localhost", "http://127.0.0.1")):
+        raise RuntimeError("APP_PUBLIC_URL deve usar https:// (http só para localhost)")
+
     return Settings(
         app_env=app_env,
         database_url=database_url,
@@ -104,6 +110,7 @@ def _load_settings() -> Settings:
         whatsapp_token=whatsapp_token,
         whatsapp_phone_number_id=whatsapp_phone_number_id,
         whatsapp_template=whatsapp_template,
+        app_public_url=app_public_url,
     )
 
 
