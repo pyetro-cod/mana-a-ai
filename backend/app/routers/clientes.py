@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .. import models, regras, resgates, schemas
+from .. import limites, models, regras, resgates, schemas
 from ..database import get_db
 from ..auth_utils import get_caixa_atual, get_cliente_atual
 from .carteira import montar_extrato
@@ -44,10 +44,18 @@ def usar_cupom(
 ):
     """O cliente escaneia o QR do cupom e o crédito cai na hora (com o bônus, no 1º)."""
     try:
+        limites.checar(db, "cupom", cliente.id)
+    except limites.LimiteExcedido as exc:
+        raise HTTPException(status_code=429, detail="muitas_tentativas",
+                            headers={"Retry-After": str(exc.segundos_para_tentar)})
+    try:
         resultado = regras.resgatar_cupom(db, cliente, payload.codigo)
         db.commit()
     except regras.CupomRecusado as recusa:
         db.rollback()
+        if recusa.motivo == "cupom_inexistente":
+            # Only made-up codes count: a used or expired coupon is a real one, not a guess.
+            limites.registrar_falha(db, "cupom", cliente.id)
         raise HTTPException(status_code=STATUS_RECUSA[recusa.motivo], detail=recusa.motivo)
     return resultado
 

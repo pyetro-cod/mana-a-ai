@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, regras, schemas
 from ..database import get_db
-from ..auth_utils import get_caixa_atual
+from ..auth_utils import get_admin_atual
 
 router = APIRouter(prefix="/transacoes", tags=["transacoes"])
 
@@ -12,8 +12,9 @@ router = APIRouter(prefix="/transacoes", tags=["transacoes"])
 def lancar_transacao(
     payload: schemas.TransacaoCreate,
     db: Session = Depends(get_db),
-    operador: models.Usuario = Depends(get_caixa_atual),
+    operador: models.Usuario = Depends(get_admin_atual),
 ):
+    """Ajuste manual, só do admin (corrigir um engano). O crédito do dia a dia vem dos cupons."""
     carteira = db.query(models.Carteira).filter(
         models.Carteira.id == payload.carteira_id
     ).with_for_update().first()

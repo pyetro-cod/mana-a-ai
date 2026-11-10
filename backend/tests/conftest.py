@@ -14,6 +14,7 @@ os.environ["JWT_EXPIRE_MINUTES"] = "480"
 os.environ["CORS_ORIGINS"] = "http://localhost:5500"
 
 import pytest  # noqa: E402
+from sqlalchemy import event, inspect  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from passlib.context import CryptContext  # noqa: E402
 
@@ -26,17 +27,44 @@ TEL_CAIXA = "83988887777"
 TEL_ADMIN = "83977776666"
 TEL_CLIENTE = "83999998888"
 
-_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt is slow on purpose (~0.45 s per check, cost 12). The cost is stored inside the
+# hash, so test users get the minimum cost (4): logins in tests become instant while
+# the API keeps verifying real passwords exactly as in production.
+_pwd = CryptContext(schemes=["bcrypt"], bcrypt__rounds=4)
+SENHA_HASH = _pwd.hash(SENHA)
+
+
+@event.listens_for(engine, "connect")
+def _sqlite_rapido(conexao, _registro):
+    # Test-only: skip forcing every write to disk. On Windows each fsync also goes
+    # through the antivirus, which made the suite take minutes. Never do this in prod.
+    cursor = conexao.cursor()
+    cursor.execute("PRAGMA synchronous=OFF")
+    cursor.execute("PRAGMA journal_mode=MEMORY")
+    cursor.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def esquema():
+    """Cria as tabelas uma vez só para a sessão inteira de testes."""
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
 
 @pytest.fixture(autouse=True)
-def banco_limpo():
-    """Cada teste começa com um banco novo e os mesmos usuários de exemplo."""
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+def banco_limpo(esquema):
+    """Cada teste começa com as tabelas vazias e os mesmos usuários de exemplo.
+
+    Apagar as linhas é bem mais rápido que recriar as tabelas a cada teste.
+    """
+    if not inspect(engine).has_table("usuarios"):  # test_migracoes dropped everything
+        Base.metadata.create_all(bind=engine)
+    with engine.begin() as conexao:
+        for tabela in reversed(Base.metadata.sorted_tables):  # children before parents
+            conexao.execute(tabela.delete())
     db = SessionLocal()
     try:
-        senha_hash = _pwd.hash(SENHA)
+        senha_hash = SENHA_HASH
         db.add_all([
             models.Usuario(nome="Caixa", telefone=TEL_CAIXA, perfil="caixa", senha_hash=senha_hash),
             models.Usuario(nome="Admin", telefone=TEL_ADMIN, perfil="admin", senha_hash=senha_hash),

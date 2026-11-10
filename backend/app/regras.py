@@ -31,7 +31,7 @@ class CupomRecusado(Exception):
 
 def agora() -> datetime:
     """UTC sem fuso (naive), o mesmo formato das colunas DateTime do banco."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return models.agora_utc()
 
 
 def inicio_do_dia_na_loja(momento: datetime) -> datetime:

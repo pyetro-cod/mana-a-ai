@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from typing import Optional, Literal, List
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Letters (any language), digits, spaces and common punctuation. Rejects <, >, quotes
 # and backticks, so a stored name can never be turned into HTML/JS by some other screen.
@@ -48,8 +48,7 @@ class ProdutoOut(BaseModel):
     nome: str
     valor_creditos: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClienteCreate(BaseModel):
@@ -113,8 +112,7 @@ class CarteiraOut(BaseModel):
     id: str
     saldo: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClienteOut(BaseModel):
@@ -123,8 +121,7 @@ class ClienteOut(BaseModel):
     telefone: str
     carteira: CarteiraOut
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TransacaoCreate(BaseModel):
@@ -153,8 +150,7 @@ class HistoricoItem(BaseModel):
     criado_em: datetime
     produto_id: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ExtratoOut(BaseModel):
@@ -194,8 +190,7 @@ class ConfiguracaoOut(BaseModel):
     max_cupons_por_dia: int
     atualizado_em: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ConfiguracaoUpdate(BaseModel):
@@ -264,8 +259,7 @@ class PremioOut(BaseModel):
     custo_creditos: int
     ativo: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- resgate de prêmio ----------

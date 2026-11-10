@@ -6,7 +6,7 @@ import pytest
 from app import models, regras
 from app.database import SessionLocal
 
-from .conftest import TEL_CAIXA, TEL_CLIENTE, auth, entrar_como_cliente, usuario_id
+from .conftest import TEL_ADMIN, TEL_CAIXA, TEL_CLIENTE, auth, entrar_como_cliente, usuario_id
 
 TEL_NOVO = "83955554444"
 
@@ -211,24 +211,24 @@ def test_perfil_tambem_mostra_saldo_ja_expirado(client, codigos_enviados):
     assert client.get("/clientes/me", headers=auth(token)).json()["carteira"]["saldo"] == 0
 
 
-def test_caixa_nao_debita_saldo_vencido(client, token_caixa):
+def test_admin_nao_debita_saldo_vencido(client, token_admin):
     definir_ultima_compra(TEL_CLIENTE, regras.agora() - timedelta(days=31))
     carteira_id = client.get("/clientes", params={"telefone": TEL_CLIENTE},
-                             headers=auth(token_caixa)).json()["carteira"]["id"]
-    res = client.post("/transacoes", headers=auth(token_caixa),
+                             headers=auth(token_admin)).json()["carteira"]["id"]
+    res = client.post("/transacoes", headers=auth(token_admin),
                       json={"carteira_id": carteira_id, "tipo": "debito", "valor": 50})
     assert res.status_code == 422
 
 
-def test_lancamento_manual_registra_o_operador(client, token_caixa):
+def test_lancamento_manual_registra_o_operador(client, token_admin):
     carteira_id = client.get("/clientes", params={"telefone": TEL_CLIENTE},
-                             headers=auth(token_caixa)).json()["carteira"]["id"]
-    client.post("/transacoes", headers=auth(token_caixa),
+                             headers=auth(token_admin)).json()["carteira"]["id"]
+    client.post("/transacoes", headers=auth(token_admin),
                 json={"carteira_id": carteira_id, "tipo": "credito", "valor": 10})
     db = SessionLocal()
     try:
         transacao = db.query(models.Transacao).one()
-        assert (transacao.motivo, transacao.operador_id) == ("manual", usuario_id(TEL_CAIXA))
+        assert (transacao.motivo, transacao.operador_id) == ("manual", usuario_id(TEL_ADMIN))
     finally:
         db.close()
 
