@@ -315,6 +315,11 @@ async function pedirCodigo(){
     document.getElementById('clienteCodigo').value = '';
     mostrarPassoCliente('passoCodigo');
     statusCliente('Código enviado. Ele vale por 10 minutos.', 'var(--green)');
+    if(data.codigo_dev){
+      // Only when the API runs with OTP_MOSTRAR_NO_APP=1 (local development).
+      document.getElementById('clienteCodigo').value = data.codigo_dev;
+      statusCliente(`Modo teste: seu código é ${data.codigo_dev} (já preenchido). Clique em Entrar.`, 'var(--yellow)');
+    }
   }catch(e){
     statusCliente(`Não consegui falar com a API em ${API_BASE}.`, 'var(--yellow)');
   }

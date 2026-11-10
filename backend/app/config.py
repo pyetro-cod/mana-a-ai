@@ -33,6 +33,7 @@ class Settings:
     whatsapp_phone_number_id: str
     whatsapp_template: str
     app_public_url: str
+    otp_mostrar_no_app: bool
 
 
 def _int_positivo(nome: str, padrao: str) -> int:
@@ -87,6 +88,13 @@ def _load_settings() -> Settings:
             "OTP_PROVIDER=whatsapp exige WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID e WHATSAPP_TEMPLATE"
         )
 
+    # Dev-only shortcut: the login code comes back in the API response and the app shows
+    # it, so you can test the customer login without reading the server terminal.
+    # Anyone could log in as any phone with this on, hence the hard refusals below.
+    otp_mostrar_no_app = os.getenv("OTP_MOSTRAR_NO_APP", "0").strip().lower() in ("1", "true", "sim")
+    if otp_mostrar_no_app and (app_env != "dev" or otp_provider != "console"):
+        raise RuntimeError("OTP_MOSTRAR_NO_APP só é permitido com APP_ENV=dev e OTP_PROVIDER=console")
+
     database_url = _database_url()
     if os.getenv("VERCEL") and database_url.startswith("sqlite"):
         # Vercel's filesystem is ephemeral: a SQLite file there would silently lose every balance.
@@ -111,6 +119,7 @@ def _load_settings() -> Settings:
         whatsapp_phone_number_id=whatsapp_phone_number_id,
         whatsapp_template=whatsapp_template,
         app_public_url=app_public_url,
+        otp_mostrar_no_app=otp_mostrar_no_app,
     )
 
 

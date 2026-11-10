@@ -12,6 +12,8 @@ os.environ["DATABASE_URL"] = f"sqlite:///{Path(_tmp_dir, 'teste.db').as_posix()}
 os.environ["JWT_SECRET"] = "segredo-exclusivo-dos-testes-com-mais-de-32-caracteres"
 os.environ["JWT_EXPIRE_MINUTES"] = "480"
 os.environ["CORS_ORIGINS"] = "http://localhost:5500"
+# The developer's backend/.env may turn the dev shortcut on; tests must see the default.
+os.environ["OTP_MOSTRAR_NO_APP"] = "0"
 
 import pytest  # noqa: E402
 from sqlalchemy import event, inspect  # noqa: E402

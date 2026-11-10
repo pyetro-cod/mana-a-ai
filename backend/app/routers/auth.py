@@ -52,7 +52,7 @@ def solicitar_codigo(payload: schemas.SolicitarCodigoRequest, db: Session = Depe
     """Envia um código de acesso ao telefone. A resposta é a mesma para telefone
     cadastrado ou não, para não revelar quem é cliente."""
     try:
-        otp.solicitar_codigo(db, payload.telefone)
+        codigo = otp.solicitar_codigo(db, payload.telefone)
     except otp.LimiteExcedido as exc:
         raise HTTPException(
             status_code=429,
@@ -61,6 +61,8 @@ def solicitar_codigo(payload: schemas.SolicitarCodigoRequest, db: Session = Depe
         )
     except EnvioFalhou:
         raise HTTPException(status_code=503, detail="Não foi possível enviar o código agora, tente de novo")
+    if settings.otp_mostrar_no_app:
+        return {"detail": "Código enviado", "codigo_dev": codigo}
     return {"detail": "Código enviado"}
 
 
