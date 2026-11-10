@@ -5,11 +5,22 @@ function show(id, btn){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + id).classList.add('active');
   document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+/* ================= Datas =================
+   A API guarda e devolve horários em UTC sem o "Z" no fim. Sem ele, o navegador
+   leria como horário local e tudo ficaria 3 horas adiantado em João Pessoa. */
+function dataDaApi(iso){
+  return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : iso + 'Z');
 }
 
 function formatData(iso){
-  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  return dataDaApi(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+
+function formatDataHora(iso){
+  return dataDaApi(iso).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 /* ================= DOM seguro =================
@@ -31,26 +42,51 @@ function renderLista(container, nodes, mensagemVazia, classeVazia){
     : [el('div', { className: classeVazia, text: mensagemVazia, style: { color: 'var(--cream-dim)', fontSize: '13px' } })]));
 }
 
-/* ================= Caixa: autenticação ================= */
+function mensagem(linhaId, texto, tom = 'neutro'){
+  const linha = document.getElementById(linhaId);
+  linha.style.color = { ok: 'var(--green)', erro: 'var(--yellow)', neutro: 'var(--cream-dim)' }[tom];
+  linha.textContent = texto;
+}
+
+// O que cada lançamento significa, em português de balcão.
+const ROTULO_MOTIVO = {
+  cupom: 'Cupom',
+  bonus: 'Bônus de boas-vindas',
+  resgate: 'Troca por prêmio',
+  estorno_resgate: 'Troca desfeita (créditos devolvidos)',
+  expiracao: 'Créditos vencidos',
+  manual: 'Ajuste da loja',
+};
+
+function linhaDoExtrato(h, classe){
+  const credito = h.tipo === 'credito';
+  return el('div', { className: classe }, [
+    el('div', {}, [
+      el('div', { className: 'tx-name', text: ROTULO_MOTIVO[h.motivo] || (credito ? 'Crédito' : 'Débito') }),
+      el('div', { className: 'tx-date', text: formatData(h.criado_em) }),
+    ]),
+    el('div', { className: `tx-val ${credito ? 'credit' : 'debit'}`, text: `${credito ? '+' : '−'}${h.valor}` }),
+  ]);
+}
+
+/* ================= Balcão: autenticação ================= */
 let caixaToken = localStorage.getItem('manaCaixaToken') || null;
 let caixaPerfil = localStorage.getItem('manaCaixaPerfil') || null;
 let caixaCarteiraId = null;
 
 function atualizarTelaCaixa(){
   const logado = !!caixaToken;
+  const admin = logado && caixaPerfil === 'admin';
   document.getElementById('caixaLoginBox').style.display = logado ? 'none' : 'grid';
   document.getElementById('caixaPainel').style.display = logado ? 'grid' : 'none';
-  document.getElementById('adminProdutos').style.display = (logado && caixaPerfil === 'admin') ? 'block' : 'none';
-  document.getElementById('adminLink').style.display = (logado && caixaPerfil === 'admin') ? 'inline-block' : 'none';
-  if(logado) carregarProdutos();
+  document.getElementById('adminLink').style.display = admin ? 'inline-block' : 'none';
+  document.getElementById('ajusteAdmin').style.display = admin ? 'block' : 'none';
 }
 
 async function loginCaixa(){
   const telefone = document.getElementById('caixaLoginTelefone').value.trim();
   const senha = document.getElementById('caixaLoginSenha').value;
-  const status = document.getElementById('caixaLoginStatus');
-  status.style.color = 'var(--cream-dim)';
-  status.textContent = 'Entrando...';
+  mensagem('caixaLoginStatus', 'Entrando...');
 
   try{
     const res = await fetch(`${API_BASE}/auth/login`, {
@@ -60,19 +96,19 @@ async function loginCaixa(){
     });
     const data = await res.json();
     if(!res.ok){
-      status.style.color = 'var(--yellow)';
-      status.textContent = data.detail || 'Não foi possível entrar.';
+      const texto = typeof data.detail === 'string' ? data.detail : 'Confira telefone e senha.';
+      mensagem('caixaLoginStatus', texto, 'erro');
       return;
     }
     caixaToken = data.token;
     caixaPerfil = data.perfil;
     localStorage.setItem('manaCaixaToken', caixaToken);
     localStorage.setItem('manaCaixaPerfil', caixaPerfil);
-    status.textContent = '';
+    document.getElementById('caixaLoginSenha').value = '';
+    mensagem('caixaLoginStatus', '');
     atualizarTelaCaixa();
   }catch(e){
-    status.style.color = 'var(--yellow)';
-    status.textContent = `Não consegui falar com a API em ${API_BASE}.`;
+    mensagem('caixaLoginStatus', `Não consegui falar com a API em ${API_BASE}.`, 'erro');
   }
 }
 
@@ -83,265 +119,147 @@ function logoutCaixa(){
   localStorage.removeItem('manaCaixaToken');
   localStorage.removeItem('manaCaixaPerfil');
   document.getElementById('caixaClienteNome').textContent = '—';
-  document.getElementById('caixaClienteTelefone').textContent = 'Busque um cliente pelo telefone';
+  document.getElementById('caixaClienteTelefone').textContent = 'Busque pelo telefone';
   document.getElementById('caixaSaldo').textContent = '—';
+  document.getElementById('deskTxList').replaceChildren();
+  limparResgate();
   atualizarTelaCaixa();
 }
 
-function authHeaders(){
-  return { Authorization: `Bearer ${caixaToken}` };
-}
-
-/* ================= Painel do caixa ================= */
-let telefoneBuscado = null;
-
-async function buscarCliente(){
-  const telefone = document.getElementById('telefoneInput').value.trim();
-  const status = document.getElementById('caixaStatus');
-  const cadastroBox = document.getElementById('caixaCadastroBox');
-  cadastroBox.style.display = 'none';
-  status.style.color = 'var(--cream-dim)';
-  status.textContent = 'Buscando...';
-
-  try{
-    const res = await fetch(`${API_BASE}/clientes?telefone=${encodeURIComponent(telefone)}`, {
-      headers: authHeaders()
-    });
-    if(res.status === 401){
-      status.style.color = 'var(--yellow)';
-      status.textContent = 'Sessão expirada, entre novamente.';
-      logoutCaixa();
-      return;
-    }
-    if(res.status === 404){
-      telefoneBuscado = telefone;
-      status.style.color = 'var(--yellow)';
-      status.textContent = 'Cliente não encontrado — cadastrar novo?';
-      cadastroBox.style.display = 'block';
-      return;
-    }
-    if(!res.ok){
-      status.style.color = 'var(--yellow)';
-      status.textContent = 'Erro ao buscar cliente.';
-      return;
-    }
-    const cliente = await res.json();
-    caixaCarteiraId = cliente.carteira.id;
-    document.getElementById('caixaClienteNome').textContent = cliente.nome;
-    document.getElementById('caixaClienteTelefone').textContent = cliente.telefone;
-    document.getElementById('caixaSaldo').textContent = cliente.carteira.saldo;
-    status.textContent = '';
-    document.getElementById('lancamentoFeedback').textContent = '';
-    carregarHistoricoCaixa(caixaCarteiraId);
-  }catch(e){
-    status.style.color = 'var(--yellow)';
-    status.textContent = `Não consegui falar com a API em ${API_BASE} — ela está rodando?`;
+// fetch do balcão: põe o token e trata sessão vencida num lugar só.
+async function apiCaixa(caminho, { method = 'GET', body } = {}){
+  const res = await fetch(`${API_BASE}${caminho}`, {
+    method,
+    headers: { Authorization: `Bearer ${caixaToken}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if(res.status === 401){
+    logoutCaixa();
+    mensagem('caixaLoginStatus', 'Sessão expirada, entre novamente.', 'erro');
+    throw new Error('sessao');
   }
+  return { res, data: await res.json() };
 }
 
-async function cadastrarCliente(){
-  const nome = document.getElementById('cadastroNomeInput').value.trim();
-  const status = document.getElementById('caixaStatus');
+/* ================= Balcão: confirmar troca ================= */
+let codigoConferido = null;
 
-  if(!nome){
-    status.style.color = 'var(--yellow)';
-    status.textContent = 'Digite o nome do cliente.';
+function limparResgate(){
+  codigoConferido = null;
+  document.getElementById('resgateCodigoInput').value = '';
+  document.getElementById('resgateCard').style.display = 'none';
+  document.getElementById('resgateAcoes').style.display = 'none';
+}
+
+const RECUSA_RESGATE = {
+  resgate_inexistente: 'Código não encontrado. Confira com o cliente (ou já foi usado/cancelado).',
+  resgate_expirado: 'Código vencido. Os créditos já voltaram para o cliente: peça um código novo no app.',
+};
+
+async function conferirResgate(){
+  const codigo = document.getElementById('resgateCodigoInput').value.trim();
+  if(!/^\d{6}$/.test(codigo)){
+    mensagem('resgateStatus', 'O código tem 6 dígitos.', 'erro');
     return;
   }
-
+  mensagem('resgateStatus', 'Conferindo...');
   try{
-    const res = await fetch(`${API_BASE}/clientes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ nome, telefone: telefoneBuscado })
-    });
-    if(res.status === 401){
-      logoutCaixa();
-      return;
-    }
-    const data = await res.json();
+    const { res, data } = await apiCaixa(`/resgates/${codigo}`);
     if(!res.ok){
-      status.style.color = 'var(--yellow)';
-      status.textContent = data.detail || 'Erro ao cadastrar cliente.';
+      limparResgate();
+      mensagem('resgateStatus', RECUSA_RESGATE[data.detail] || 'Não foi possível conferir.', 'erro');
       return;
     }
-    document.getElementById('caixaCadastroBox').style.display = 'none';
-    document.getElementById('cadastroNomeInput').value = '';
+    codigoConferido = codigo;
+    document.getElementById('confereCliente').textContent = data.cliente;
+    document.getElementById('conferePremio').textContent = data.premio;
+    document.getElementById('confereCusto').textContent = data.custo_creditos;
+    document.getElementById('resgateCard').style.display = 'flex';
+    document.getElementById('resgateAcoes').style.display = 'block';
+    mensagem('resgateStatus', 'Confira o nome com o cliente antes de entregar.', 'ok');
+  }catch(e){
+    if(e.message !== 'sessao') mensagem('resgateStatus', `Não consegui falar com a API em ${API_BASE}.`, 'erro');
+  }
+}
+
+async function confirmarResgate(){
+  if(!codigoConferido) return;
+  try{
+    const { res, data } = await apiCaixa(`/resgates/${codigoConferido}/confirmar`, { method: 'POST' });
+    limparResgate();
+    if(!res.ok){
+      mensagem('resgateStatus', RECUSA_RESGATE[data.detail] || 'Não foi possível confirmar.', 'erro');
+      return;
+    }
+    mensagem('resgateStatus', `Pronto: ${data.premio} entregue para ${data.cliente}.`, 'ok');
+  }catch(e){
+    if(e.message !== 'sessao') mensagem('resgateStatus', 'Não consegui falar com a API.', 'erro');
+  }
+}
+
+/* ================= Balcão: consultar cliente ================= */
+async function buscarCliente(){
+  const telefone = document.getElementById('telefoneInput').value.trim();
+  if(!/^\d{10,11}$/.test(telefone)){
+    mensagem('caixaStatus', 'Digite DDD + número, só dígitos.', 'erro');
+    return;
+  }
+  mensagem('caixaStatus', 'Buscando...');
+  try{
+    const { res, data } = await apiCaixa(`/clientes?telefone=${encodeURIComponent(telefone)}`);
+    if(res.status === 404){
+      mensagem('caixaStatus', 'Sem cadastro. O cliente se cadastra sozinho no app ao usar o 1º cupom.', 'erro');
+      return;
+    }
+    if(!res.ok){
+      mensagem('caixaStatus', 'Erro ao buscar cliente.', 'erro');
+      return;
+    }
     caixaCarteiraId = data.carteira.id;
     document.getElementById('caixaClienteNome').textContent = data.nome;
     document.getElementById('caixaClienteTelefone').textContent = data.telefone;
-    document.getElementById('caixaSaldo').textContent = data.carteira.saldo;
-    status.style.color = 'var(--green)';
-    status.textContent = 'Cliente cadastrado com sucesso.';
-    carregarHistoricoCaixa(caixaCarteiraId);
+    mensagem('caixaStatus', '');
+    mensagem('lancamentoFeedback', '');
+    carregarHistoricoCaixa();
   }catch(e){
-    status.style.color = 'var(--yellow)';
-    status.textContent = 'Não consegui falar com a API.';
+    if(e.message !== 'sessao') mensagem('caixaStatus', `Não consegui falar com a API em ${API_BASE}.`, 'erro');
   }
 }
 
-async function lancarTransacao(tipo, valor, rotulo){
-  const feedback = document.getElementById('lancamentoFeedback');
-  if(!caixaCarteiraId){
-    feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Busque um cliente antes de lançar.';
-    return;
-  }
-  if(!valor || valor <= 0){
-    feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Informe uma quantidade válida.';
-    return;
-  }
-
+async function carregarHistoricoCaixa(){
   try{
-    const res = await fetch(`${API_BASE}/transacoes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ carteira_id: caixaCarteiraId, tipo, valor })
-    });
-    if(res.status === 401){
-      feedback.style.color = 'var(--yellow)';
-      feedback.textContent = 'Sessão expirada, entre novamente.';
-      logoutCaixa();
-      return;
-    }
-    const data = await res.json();
-    if(!res.ok){
-      feedback.style.color = 'var(--yellow)';
-      feedback.textContent = data.detail || 'Erro ao lançar.';
-      return;
-    }
-    document.getElementById('caixaSaldo').textContent = data.novo_saldo;
-    const sinal = tipo === 'credito' ? '+' : '−';
-    feedback.style.color = tipo === 'credito' ? 'var(--green)' : 'var(--yellow)';
-    feedback.textContent = `${sinal}${valor} (${rotulo}). Novo saldo: ${data.novo_saldo}.`;
-    carregarHistoricoCaixa(caixaCarteiraId);
-  }catch(e){
-    feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Não consegui falar com a API.';
-  }
-}
-
-function resgatarCreditos(){
-  const valor = parseInt(document.getElementById('resgateValorInput').value, 10);
-  lancarTransacao('debito', valor, 'Resgate');
-  document.getElementById('resgateValorInput').value = '';
-}
-
-/* ================= Produtos (dinâmico) ================= */
-async function carregarProdutos(){
-  const grid = document.getElementById('produtoGrid');
-  try{
-    const res = await fetch(`${API_BASE}/produtos`, { headers: authHeaders() });
-    if(res.status === 401){ logoutCaixa(); return; }
-    if(!res.ok) throw new Error('erro ao carregar produtos');
-    const produtos = await res.json();
-
-    const botoes = produtos.map(p => {
-      const btn = el('div', { className: 'product-btn' }, [
-        el('div', { className: 'pname', text: p.nome }),
-        el('div', { className: 'pcred', text: `+${p.valor_creditos} crédito${p.valor_creditos > 1 ? 's' : ''}` }),
-      ]);
-      btn.addEventListener('click', () => lancarTransacao('credito', p.valor_creditos, p.nome));
-      return btn;
-    });
-    renderLista(grid, botoes, 'Nenhum produto cadastrado ainda.');
-
-    if(caixaPerfil === 'admin') renderAdminProdutos(produtos);
-  }catch(e){
-    grid.replaceChildren(el('div', { text: 'Não consegui carregar os produtos.', style: { color: 'var(--yellow)', fontSize: '13px' } }));
-  }
-}
-
-function renderAdminProdutos(produtos){
-  const lista = document.getElementById('listaProdutosAdmin');
-  lista.replaceChildren(...produtos.map(p => {
-    const inputNome = el('input', { className: 'nome' });
-    inputNome.value = p.nome;
-    const inputValor = el('input', { className: 'valor', attrs: { type: 'number', min: '1' } });
-    inputValor.value = p.valor_creditos;
-    const btn = el('button', { text: 'Salvar' });
-    btn.addEventListener('click', () => salvarProduto(p.id, inputNome.value.trim(), parseInt(inputValor.value, 10)));
-    return el('div', { className: 'admin-produto-row' }, [inputNome, inputValor, btn]);
-  }));
-}
-
-async function salvarProduto(id, nome, valor){
-  const feedback = document.getElementById('adminFeedback');
-
-  try{
-    const res = await fetch(`${API_BASE}/produtos/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ nome, valor_creditos: valor })
-    });
-    const data = await res.json();
-    if(!res.ok){
-      feedback.style.color = 'var(--yellow)';
-      feedback.textContent = data.detail || 'Erro ao salvar produto.';
-      return;
-    }
-    feedback.style.color = 'var(--green)';
-    feedback.textContent = `"${data.nome}" atualizado.`;
-    carregarProdutos();
-  }catch(e){
-    feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Não consegui falar com a API.';
-  }
-}
-
-async function adicionarProduto(){
-  const feedback = document.getElementById('adminFeedback');
-  const nome = document.getElementById('novoProdutoNome').value.trim();
-  const valor = parseInt(document.getElementById('novoProdutoValor').value, 10);
-
-  if(!nome || !valor || valor <= 0){
-    feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Preencha nome e quantidade de créditos.';
-    return;
-  }
-
-  try{
-    const res = await fetch(`${API_BASE}/produtos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ nome, valor_creditos: valor })
-    });
-    const data = await res.json();
-    if(!res.ok){
-      feedback.style.color = 'var(--yellow)';
-      feedback.textContent = data.detail || 'Erro ao criar produto.';
-      return;
-    }
-    document.getElementById('novoProdutoNome').value = '';
-    document.getElementById('novoProdutoValor').value = '';
-    feedback.style.color = 'var(--green)';
-    feedback.textContent = `"${data.nome}" adicionado.`;
-    carregarProdutos();
-  }catch(e){
-    feedback.style.color = 'var(--yellow)';
-    feedback.textContent = 'Não consegui falar com a API.';
-  }
-}
-
-async function carregarHistoricoCaixa(carteiraId){
-  const container = document.getElementById('deskTxList');
-  try{
-    const res = await fetch(`${API_BASE}/carteira/${encodeURIComponent(carteiraId)}`, { headers: authHeaders() });
-    if(res.status === 401){ logoutCaixa(); return; }
+    const { res, data } = await apiCaixa(`/carteira/${encodeURIComponent(caixaCarteiraId)}`);
     if(!res.ok) return;
-    const extrato = await res.json();
-    renderLista(container, extrato.historico.map(h => {
-      const credito = h.tipo === 'credito';
-      return el('div', { className: 'desk-tx' }, [
-        el('span', { text: `${credito ? 'Crédito' : 'Débito'} · ${formatData(h.criado_em)}` }),
-        el('span', { text: `${credito ? '+' : '−'}${h.valor}`, style: { color: credito ? 'var(--green)' : 'var(--yellow)', fontWeight: '700' } }),
-      ]);
-    }), 'Sem lançamentos ainda.');
-  }catch(e){ /* já sinalizamos erro de conexão na busca */ }
+    // The statement applies expiry first, so this is the balance that is really valid.
+    document.getElementById('caixaSaldo').textContent = data.saldo;
+    renderLista(document.getElementById('deskTxList'),
+                data.historico.map(h => linhaDoExtrato(h, 'desk-tx')), 'Sem lançamentos ainda.');
+  }catch(e){ /* erro de conexão já aparece na busca */ }
 }
 
-/* ================= App do cliente ================= */
+async function ajusteManual(tipo){
+  const valor = parseInt(document.getElementById('ajusteValor').value, 10);
+  if(!caixaCarteiraId){ mensagem('lancamentoFeedback', 'Busque um cliente antes.', 'erro'); return; }
+  if(!valor || valor <= 0){ mensagem('lancamentoFeedback', 'Informe uma quantidade válida.', 'erro'); return; }
+  const verbo = tipo === 'credito' ? 'creditar' : 'debitar';
+  if(!confirm(`Confirma ${verbo} ${valor} créditos? Fica registrado no seu usuário.`)) return;
+  try{
+    const { res, data } = await apiCaixa('/transacoes', {
+      method: 'POST', body: { carteira_id: caixaCarteiraId, tipo, valor },
+    });
+    if(!res.ok){
+      mensagem('lancamentoFeedback', typeof data.detail === 'string' ? data.detail : 'Erro ao lançar.', 'erro');
+      return;
+    }
+    document.getElementById('ajusteValor').value = '';
+    mensagem('lancamentoFeedback', `Feito. Novo saldo: ${data.novo_saldo}.`, 'ok');
+    carregarHistoricoCaixa();
+  }catch(e){
+    if(e.message !== 'sessao') mensagem('lancamentoFeedback', 'Não consegui falar com a API.', 'erro');
+  }
+}
+
+/* ================= App do cliente: login ================= */
 // Login por código de uso único: telefone → código → (primeira vez) nome + aceite.
 // O token do cliente identifica a carteira; o telefone nunca mais vai na URL.
 let clienteToken = localStorage.getItem('manaClienteToken') || null;
@@ -365,8 +283,13 @@ function atualizarTelaCliente(){
   document.getElementById('clienteLoginBox').style.display = logado ? 'none' : 'block';
   document.getElementById('clientePainel').style.display = logado ? 'block' : 'none';
   document.getElementById('clienteAvatar').textContent = '?';
-  if(logado) carregarSaldoCliente();
-  else mostrarPassoCliente('passoTelefone');
+  if(logado){
+    carregarCliente().then(usarCupomGuardado);
+  }else{
+    pararContagem();
+    mostrarPassoCliente('passoTelefone');
+    if(cupomGuardado()) statusCliente('Entre com seu telefone para receber os créditos do cupom.', 'var(--yellow)');
+  }
 }
 
 async function pedirCodigo(){
@@ -384,7 +307,7 @@ async function pedirCodigo(){
     });
     const data = await res.json();
     if(!res.ok){
-      statusCliente(data.detail || 'Não foi possível enviar o código.', 'var(--yellow)');
+      statusCliente(typeof data.detail === 'string' ? data.detail : 'Não foi possível enviar o código.', 'var(--yellow)');
       return;
     }
     telefoneLogin = telefone;
@@ -462,42 +385,210 @@ function logoutCliente(){
   atualizarTelaCliente();
 }
 
-async function carregarSaldoCliente(){
-  const headers = { Authorization: `Bearer ${clienteToken}` };
+// fetch do cliente: põe o token e desloga se ele venceu.
+async function apiCliente(caminho, { method = 'GET', body } = {}){
+  const res = await fetch(`${API_BASE}${caminho}`, {
+    method,
+    headers: { Authorization: `Bearer ${clienteToken}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if(res.status === 401){
+    logoutCliente();
+    throw new Error('sessao');
+  }
+  return { res, data: await res.json() };
+}
+
+/* ================= App do cliente: saldo, prêmios e extrato ================= */
+let saldoAtual = 0;
+
+function textoVencimento(venceEm){
+  if(!venceEm) return 'Use um cupom para ganhar créditos';
+  const dias = Math.ceil((dataDaApi(venceEm) - new Date()) / 86400000);
+  const data = dataDaApi(venceEm).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  if(dias <= 1) return `Seus créditos vencem hoje (${data}). Compre para renovar!`;
+  return `Vencem em ${dias} dias (${data}). Cada compra renova o prazo.`;
+}
+
+async function carregarCliente(){
   try{
-    const resCliente = await fetch(`${API_BASE}/clientes/me`, { headers });
-    if(resCliente.status === 401){ logoutCliente(); return; }
-    if(!resCliente.ok) throw new Error('cliente indisponível');
-    const cliente = await resCliente.json();
-    document.getElementById('clienteSaldoNum').textContent = cliente.carteira.saldo;
-    document.getElementById('clienteAvatar').textContent = cliente.nome.trim().charAt(0).toUpperCase() || '?';
+    const [{ data: cliente }, { data: extrato }, { data: premios }, { data: pendente }] = await Promise.all([
+      apiCliente('/clientes/me'),
+      apiCliente('/clientes/me/extrato'),
+      apiCliente('/clientes/me/premios'),
+      apiCliente('/clientes/me/resgates/pendente'),
+    ]);
+    // The statement and the profile run the same expiry/refund rules; use the statement's balance.
+    saldoAtual = extrato.saldo;
+    const primeiroNome = cliente.nome.trim().split(/\s+/)[0];
+    document.getElementById('clienteSaudacao').textContent = `Olá, ${primeiroNome}! Seus créditos`;
+    document.getElementById('clienteAvatar').textContent = primeiroNome.charAt(0).toUpperCase() || '?';
+    document.getElementById('clienteSaldoNum').textContent = extrato.saldo;
+    const foot = document.getElementById('clienteHeroFoot');
+    foot.textContent = textoVencimento(extrato.vence_em);
+    foot.classList.toggle('alerta', !!extrato.vence_em && dataDaApi(extrato.vence_em) - new Date() < 5 * 86400000);
 
-    const resExtrato = await fetch(`${API_BASE}/clientes/me/extrato`, { headers });
-    if(resExtrato.status === 401){ logoutCliente(); return; }
-    if(!resExtrato.ok) throw new Error('extrato indisponível');
-    const extrato = await resExtrato.json();
-    const ultimo = extrato.historico[0];
-    document.getElementById('clienteHeroFoot').textContent = ultimo
-      ? `${ultimo.tipo === 'credito' ? '+' : '−'}${ultimo.valor} em ${formatData(ultimo.criado_em)}`
-      : 'Nenhum lançamento ainda';
-
-    const list = document.getElementById('clienteTxList');
-    renderLista(list, extrato.historico.map(h => {
-      const credito = h.tipo === 'credito';
-      return el('div', { className: 'tx' }, [
-        el('div', {}, [
-          el('div', { className: 'tx-name', text: credito ? 'Crédito' : 'Débito' }),
-          el('div', { className: 'tx-date', text: formatData(h.criado_em) }),
-        ]),
-        el('div', { className: `tx-val ${credito ? 'credit' : 'debit'}`, text: `${credito ? '+' : '−'}${h.valor}` }),
-      ]);
-    }), 'Nenhum lançamento ainda.', 'tx');
+    renderLista(document.getElementById('clienteTxList'),
+                extrato.historico.map(h => linhaDoExtrato(h, 'tx')), 'Nenhum lançamento ainda.', 'tx');
+    renderPremios(premios);
+    mostrarResgate(pendente);
   }catch(e){
+    if(e.message === 'sessao') return;
     document.getElementById('clienteHeroFoot').textContent = `API offline em ${API_BASE}`;
     document.getElementById('clienteSaldoNum').textContent = '—';
   }
 }
 
+function renderPremios(premios){
+  const nodes = premios.map(p => {
+    const falta = p.custo_creditos - saldoAtual;
+    const botao = el('button', { className: 'premio-btn', text: falta > 0 ? `faltam ${falta}` : 'Trocar' });
+    botao.disabled = falta > 0;
+    botao.addEventListener('click', () => pedirResgate(p));
+    return el('div', { className: 'premio' + (falta > 0 ? ' longe' : '') }, [
+      el('div', {}, [
+        el('div', { className: 'tx-name', text: p.nome }),
+        el('div', { className: 'tx-date', text: `${p.custo_creditos} créditos` }),
+      ]),
+      botao,
+    ]);
+  });
+  renderLista(document.getElementById('clientePremios'), nodes, 'A loja ainda vai divulgar os prêmios.');
+}
+
+/* ================= App do cliente: usar cupom ================= */
+// O QR impresso abre o app com ?cupom=CODIGO. O código fica guardado na aba até o
+// cliente entrar, e sai da barra de endereço para não ser reaproveitado ao recarregar.
+function cupomGuardado(){
+  return sessionStorage.getItem('manaCupomPendente');
+}
+
+function capturarCupomDaUrl(){
+  const params = new URLSearchParams(location.search);
+  const codigo = params.get('cupom');
+  if(!codigo) return;
+  sessionStorage.setItem('manaCupomPendente', codigo);
+  params.delete('cupom');
+  const resto = params.toString();
+  history.replaceState(null, '', location.pathname + (resto ? `?${resto}` : '') + location.hash);
+  show('cliente', document.querySelector('.switcher button'));
+}
+
+function usarCupomGuardado(){
+  const codigo = cupomGuardado();
+  if(!codigo || !clienteToken) return;
+  sessionStorage.removeItem('manaCupomPendente');
+  document.getElementById('cupomCodigo').value = codigo;
+  usarCupom();
+}
+
+const RECUSA_CUPOM = {
+  cupom_inexistente: 'Código não encontrado. Confira as letras e números do cupom.',
+  cupom_ja_usado: 'Este cupom já foi usado.',
+  cupom_expirado: 'Este cupom passou da validade.',
+  cupom_cancelado: 'Este cupom foi cancelado pela loja.',
+  limite_diario: 'Você já usou um cupom hoje. Guarde este para amanhã!',
+  muitas_tentativas: 'Muitos códigos errados. Aguarde um pouco e tente de novo.',
+};
+
+async function usarCupom(){
+  const campo = document.getElementById('cupomCodigo');
+  const codigo = campo.value.trim();
+  if(codigo.replace(/[\s-]/g, '').length < 6){
+    mensagem('cupomStatus', 'Digite o código impresso no cupom.', 'erro');
+    return;
+  }
+  mensagem('cupomStatus', 'Validando cupom...');
+  try{
+    const { res, data } = await apiCliente('/clientes/me/cupons', { method: 'POST', body: { codigo } });
+    if(!res.ok){
+      const texto = RECUSA_CUPOM[data.detail] || 'Código inválido. Confira e tente de novo.';
+      mensagem('cupomStatus', texto, 'erro');
+      return;
+    }
+    campo.value = '';
+    let texto = `+${data.creditos} créditos!`;
+    if(data.bonus) texto += ` E +${data.bonus} de bônus de boas-vindas!`;
+    if(data.expirado) texto += ` (${data.expirado} antigos já tinham vencido.)`;
+    mensagem('cupomStatus', texto, 'ok');
+    carregarCliente();
+  }catch(e){
+    if(e.message !== 'sessao') mensagem('cupomStatus', 'Não consegui falar com a API.', 'erro');
+  }
+}
+
+/* ================= App do cliente: trocar por prêmio ================= */
+let contagem = null;
+
+function pararContagem(){
+  if(contagem) clearInterval(contagem);
+  contagem = null;
+}
+
+function mostrarResgate(resgate){
+  pararContagem();
+  const box = document.getElementById('resgateBox');
+  if(!resgate){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  document.getElementById('resgateCodigo').textContent = `${resgate.codigo.slice(0, 3)} ${resgate.codigo.slice(3)}`;
+  document.getElementById('resgatePremio').textContent = `${resgate.premio} · ${resgate.custo_creditos} créditos`;
+  const fim = dataDaApi(resgate.expira_em);
+  const tick = () => {
+    const resta = Math.max(0, Math.round((fim - new Date()) / 1000));
+    const mm = String(Math.floor(resta / 60)).padStart(2, '0');
+    const ss = String(resta % 60).padStart(2, '0');
+    document.getElementById('resgateTempo').textContent = `Vale por mais ${mm}:${ss}`;
+    if(resta === 0){
+      // Expired: the API refunds on the next read, so reloading shows the credits back.
+      pararContagem();
+      carregarCliente();
+    }
+  };
+  tick();
+  contagem = setInterval(tick, 1000);
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+const RECUSA_RESGATE_CLIENTE = {
+  saldo_insuficiente: 'Créditos insuficientes para este prêmio.',
+  premio_inexistente: 'Este prêmio não está mais disponível.',
+};
+
+async function pedirResgate(premio){
+  if(!confirm(`Trocar ${premio.custo_creditos} créditos por "${premio.nome}"? Você mostra o código no caixa.`)) return;
+  mensagem('premioStatus', 'Gerando código...');
+  try{
+    const { res, data } = await apiCliente('/clientes/me/resgates', { method: 'POST', body: { premio_id: premio.id } });
+    if(!res.ok){
+      mensagem('premioStatus', RECUSA_RESGATE_CLIENTE[data.detail] || 'Não foi possível trocar agora.', 'erro');
+      return;
+    }
+    mensagem('premioStatus', '');
+    carregarCliente();
+  }catch(e){
+    if(e.message !== 'sessao') mensagem('premioStatus', 'Não consegui falar com a API.', 'erro');
+  }
+}
+
+async function cancelarResgate(){
+  if(!confirm('Desistir da troca? Os créditos voltam para você.')) return;
+  try{
+    await apiCliente('/clientes/me/resgates/cancelar', { method: 'POST' });
+    carregarCliente();
+  }catch(e){ /* sessão vencida já desloga */ }
+}
+
 /* ================= Inicialização ================= */
+document.getElementById('btnUsarCupom').addEventListener('click', usarCupom);
+document.getElementById('cupomCodigo').addEventListener('keydown', e => { if(e.key === 'Enter') usarCupom(); });
+document.getElementById('btnCancelarResgate').addEventListener('click', cancelarResgate);
+document.getElementById('btnConferirResgate').addEventListener('click', conferirResgate);
+document.getElementById('resgateCodigoInput').addEventListener('keydown', e => { if(e.key === 'Enter') conferirResgate(); });
+document.getElementById('btnConfirmarResgate').addEventListener('click', confirmarResgate);
+document.getElementById('btnLimparResgate').addEventListener('click', () => { limparResgate(); mensagem('resgateStatus', ''); });
+document.getElementById('btnAjusteCredito').addEventListener('click', () => ajusteManual('credito'));
+document.getElementById('btnAjusteDebito').addEventListener('click', () => ajusteManual('debito'));
+
+capturarCupomDaUrl();
 atualizarTelaCaixa();
 atualizarTelaCliente();
