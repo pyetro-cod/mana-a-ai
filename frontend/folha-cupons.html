@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manaçaí — Folha de cupons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --acai:#4A1650; --acai-2:#5B1E60; --yellow:#FBB91C; --green:#8DC63F; --papel:#FFFFFF; --tinta:#2D0D31; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#ECE6EE; color:var(--tinta); font-family:'Manrope',sans-serif; }
+
+  .barra{ position:sticky; top:0; z-index:1; display:flex; gap:12px; align-items:center; justify-content:center;
+          flex-wrap:wrap; padding:14px 16px; background:var(--acai); color:#FFFBF2; font-size:14px; }
+  .barra button{ background:var(--yellow); color:var(--acai); border:none; border-radius:10px;
+                 padding:10px 18px; font-weight:800; font-size:14px; cursor:pointer; font-family:inherit; }
+  .aviso{ text-align:center; padding:40px 16px; font-size:15px; }
+
+  /* A4 = 210 x 297 mm. 3 x 4 cupons, cada um ~64 x 70 mm. */
+  @page{ size:A4; margin:8mm; }
+  .folha{ width:194mm; margin:16px auto; background:var(--papel); display:grid;
+          grid-template-columns:repeat(3, 1fr); grid-auto-rows:70mm;
+          box-shadow:0 6px 24px rgba(45,13,49,0.18); }
+  .cupom{ border:1px dashed #B9A6BD; padding:5mm 4mm 4mm; display:flex; flex-direction:column;
+          align-items:center; justify-content:space-between; text-align:center; break-inside:avoid; }
+  .cupom-topo{ display:flex; align-items:center; gap:2mm; }
+  .cupom-topo img{ width:8mm; height:8mm; border-radius:2mm; object-fit:cover; }
+  .cupom-topo span{ font-family:'Fraunces',serif; font-weight:700; font-size:13pt; color:var(--acai); }
+  .cupom-valor{ font-size:9pt; font-weight:700; color:var(--acai-2); }
+  .cupom-valor b{ font-family:'Fraunces',serif; font-size:14pt; color:var(--acai); }
+  .cupom img.qr{ width:30mm; height:30mm; image-rendering:pixelated; }
+  .cupom-codigo{ font-family:ui-monospace,'Consolas',monospace; font-size:10pt; font-weight:700; letter-spacing:0.5px; }
+  .cupom-rodape{ font-size:6.5pt; color:#6B5470; line-height:1.3; }
+  .cupom.usado{ opacity:0.25; }
+
+  @media print{
+    body{ background:var(--papel); }
+    .barra{ display:none; }
+    .folha{ margin:0; box-shadow:none; width:auto; }
+    .folha + .folha{ break-before:page; }
+  }
+  @media screen and (max-width:760px){
+    .folha{ width:calc(100% - 32px); grid-template-columns:repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <div class="barra">
+    <span id="resumo">Carregando cupons...</span>
+    <button id="btnImprimir" style="display:none;">Imprimir</button>
+  </div>
+  <div id="folhas"></div>
+
+<script src="config.js"></script>
+<script src="folha-cupons.js"></script>
+</body>
+</html>
