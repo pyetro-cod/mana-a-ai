@@ -6,7 +6,7 @@ from .routers import admin, auth, clientes, transacoes, carteira, produtos, resg
 
 # Schema is managed by Alembic migrations: run `alembic upgrade head` before starting the API.
 
-app = FastAPI(title="Manaçaí — API de fidelidade", version="0.2.0")
+app = FastAPI(title="Manaçaí — API de fidelidade", version="0.3.0")
 
 app.add_middleware(
     CORSMiddleware,
