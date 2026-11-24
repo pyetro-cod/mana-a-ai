@@ -20,7 +20,8 @@ def agora_utc() -> datetime:
 
 
 # Single store for now; the column exists so a partner network can be added later
-# without migrating every row.
+# without migrating every row. The id is an internal key kept from the store's first
+# name; the displayed name ("Maná Comedoria") lives in estabelecimentos.nome.
 ESTABELECIMENTO_PADRAO = "manacai"
 
 # Why a ledger entry happened. "manual" covers entries made before coupons existed.
