@@ -1,29 +1,29 @@
 {
   "meta": {
-    "title": "Manaçaí: programa de fidelidade com créditos digitais",
-    "client": "Manaçaí, João Pessoa",
+    "title": "Maná Comedoria: programa de fidelidade com créditos digitais",
+    "client": "Maná Comedoria, João Pessoa",
     "author": "Modelo de acompanhamento do projeto mana-acai",
-    "date": "2026-10",
+    "date": "2026-11",
     "lang": "pt-BR"
   },
   "pages": [
     {
       "type": "summary",
       "title": "Visão geral do modelo",
-      "subtitle": "Programa de créditos que o caixa lança a cada compra e o cliente acompanha pelo celular, para testar se isso faz o cliente voltar",
-      "lead": "A cada compra o caixa lança créditos na carteira do cliente, identificado pelo telefone; o cliente consulta o saldo num app web (PWA) e troca os créditos na loja. O MVP existe para responder uma pergunta: crédito digital aumenta o retorno do cliente?",
+      "subtitle": "Cupom com QR a cada compra: o crédito cai sozinho no celular do cliente e vira prêmio no balcão",
+      "lead": "A cada compra o cliente recebe um cupom impresso com QR. Ao escanear, entra no app só com o telefone e os créditos caem na hora, com bônus no primeiro cupom. Os créditos vencem após 30 dias sem compra e são trocados por itens do cardápio com um código que o caixa confirma. O MVP existe para responder uma pergunta: crédito digital aumenta o retorno do cliente?",
       "kpis": [
         {
-          "value": "3 perfis",
-          "label": "cliente, caixa e admin (dado)"
-        },
-        {
-          "value": "4 commits",
-          "label": "do painel do caixa aguardando merge na develop"
+          "value": "50 créditos",
+          "label": "por cupom, mais 100 de bônus no primeiro (configurável)"
         },
         {
           "value": "30 dias",
-          "label": "janela de retorno a medir no piloto (proposta)"
+          "label": "sem compra para o saldo vencer; cada compra renova (decisão do dono)"
+        },
+        {
+          "value": "157 testes",
+          "label": "automáticos cobrindo cupom, expiração, troca e segurança"
         },
         {
           "value": "3 a 4 semanas",
@@ -44,25 +44,25 @@
           "title": "Proposta",
           "tone": "blue",
           "items": [
-            "Créditos por produto, lançados no caixa",
-            "Saldo e histórico no celular do cliente",
-            "Resgate de créditos no balcão"
+            "Cupom com QR na compra; crédito automático, sem o caixa",
+            "Bônus de boas-vindas e validade de 30 dias para estimular a volta",
+            "Troca por itens do cardápio com código confirmado no balcão"
           ]
         },
         {
           "title": "Estado atual",
           "tone": "orange",
           "items": [
-            "Painel do caixa, cadastro, catálogo e resgate prontos",
-            "Login provisório, sem testes e sem deploy",
-            "Extrato do cliente acessível só com o telefone"
+            "Programa completo testado (release v0.3.0 preparada)",
+            "Marca Maná Comedoria e prêmios reais do cardápio aplicados",
+            "Sem deploy; envio do código por WhatsApp depende da Meta"
           ]
         },
         {
           "title": "Fora do escopo do MVP",
           "tone": "gray",
           "items": [
-            "QR code na compra",
+            "Pedidos e pagamento pelo app",
             "Rede com vários estabelecimentos",
             "Aplicativo nativo"
           ]
@@ -72,49 +72,51 @@
     {
       "type": "canvas",
       "title": "Modelo de negócio em um quadro",
-      "subtitle": "Os nove blocos do canvas preenchidos com o que existe hoje e o que está planejado",
+      "subtitle": "Os nove blocos do canvas com o que existe hoje e o que está planejado",
       "blocks": {
         "partners": [
-          "Manaçaí (estabelecimento)",
-          "Provedor de WhatsApp/SMS (planejado)",
-          "Hospedagem e banco de dados (planejado)"
+          "Maná Comedoria (estabelecimento)",
+          "WhatsApp Business / Meta (envio do código)",
+          "Vercel e Supabase (hospedagem e banco, planejados)"
         ],
         "activities": [
-          "Lançar créditos e resgates no caixa",
-          "Manter o catálogo de produtos",
+          "Imprimir e entregar um cupom a cada compra",
+          "Manter regras e catálogo de prêmios",
+          "Confirmar trocas no balcão",
           "Acompanhar a métrica de retorno"
         ],
         "resources": [
-          "API, painel do caixa e PWA",
-          "Equipe do caixa treinada",
+          "API, app do cliente, balcão e área do dono",
+          "Impressora para as folhas de cupons",
           "Base de clientes por telefone"
         ],
         "value": [
-          "Cliente: créditos a cada compra, trocáveis na loja",
-          "Loja: motivo para o cliente voltar",
+          "Cliente: crédito na hora e itens do cardápio de prêmio",
+          "Loja: motivo para o cliente voltar antes de 30 dias",
           "Loja: base própria de clientes e frequência"
         ],
         "relationship": [
-          "Atendimento no balcão",
-          "App para consultar saldo e histórico"
+          "App com saldo, prazo e extrato explicado",
+          "Atendimento no balcão na hora da troca"
         ],
         "channels": [
-          "Caixa da loja",
-          "PWA no celular do cliente"
+          "Cupom impresso com QR",
+          "App web no celular do cliente",
+          "Balcão da loja"
         ],
         "segments": [
-          "Clientes recorrentes do Manaçaí em João Pessoa"
+          "Clientes recorrentes do Maná Comedoria em João Pessoa"
         ],
         "costs": [
           "Desenvolvimento",
-          "Hospedagem e banco",
-          "Mensagens de código (OTP)",
-          "Produtos dados no resgate"
+          "Hospedagem, banco e mensagens (pagos pelo dono)",
+          "Itens entregues como prêmio",
+          "Impressão dos cupons"
         ],
         "revenue": [
           "Mais visitas e recompra (a medir no piloto)",
           "Cliente não paga pelo programa",
-          "Modelo comercial com o Manaçaí a definir"
+          "Modelo comercial com o Maná Comedoria a definir"
         ]
       }
     },
@@ -126,12 +128,12 @@
         "title": "Sistema de fidelidade",
         "tone": "blue",
         "items": [
-          "login e perfis",
-          "cadastro de clientes",
-          "catálogo de produtos",
-          "carteira e histórico (ledger)",
-          "painel do caixa",
-          "app do cliente (PWA)"
+          "login por código e perfis",
+          "cupons com QR",
+          "carteira e extrato (ledger)",
+          "regras, bônus e expiração",
+          "prêmios e trocas",
+          "área do dono"
         ]
       },
       "groups": [
@@ -144,12 +146,12 @@
             {
               "id": "caixa",
               "title": "Operador de caixa",
-              "text": "busca cliente, lança crédito e resgate"
+              "text": "entrega o cupom e confirma a troca"
             },
             {
               "id": "admin",
-              "title": "Administrador",
-              "text": "define os créditos de cada produto"
+              "title": "Dono (admin)",
+              "text": "define regras, gera cupons e prêmios"
             }
           ]
         },
@@ -161,8 +163,8 @@
           "cards": [
             {
               "id": "cliente",
-              "title": "Cliente do Manaçaí",
-              "text": "compra, informa o telefone e consulta o saldo"
+              "title": "Cliente do Maná",
+              "text": "escaneia o cupom, junta e troca créditos"
             }
           ]
         },
@@ -174,17 +176,17 @@
           "cards": [
             {
               "id": "otp",
-              "title": "WhatsApp/SMS",
-              "text": "envia código de acesso ao cliente",
+              "title": "WhatsApp Business",
+              "text": "envia o código de entrada ao cliente",
               "tag": {
                 "label": "ainda não existe:",
-                "text": "planejado para a fase 3"
+                "text": "depende do cadastro do Maná na Meta"
               }
             },
             {
               "id": "banco",
               "title": "Banco e hospedagem",
-              "text": "SQLite local hoje; Postgres/Supabase depois"
+              "text": "SQLite local hoje; Postgres/Supabase e Vercel depois"
             }
           ]
         },
@@ -196,7 +198,7 @@
           "cards": [
             {
               "title": "LGPD",
-              "text": "nome, telefone e histórico de compras são dados pessoais"
+              "text": "aceite versionado no cadastro; cada cliente só vê o próprio extrato"
             }
           ]
         }
@@ -205,13 +207,13 @@
         {
           "from": "g-loja",
           "to": "center",
-          "label": "créditos, resgates",
+          "label": "cupons, trocas",
           "both": true
         },
         {
           "from": "cliente",
           "to": "center",
-          "label": "consulta saldo"
+          "label": "escaneia, troca"
         },
         {
           "from": "center",
@@ -233,7 +235,7 @@
           "route": "outer-left"
         }
       ],
-      "note": "O dinheiro da compra não passa pelo sistema: ele só registra créditos. Seta tracejada indica integração ainda não construída."
+      "note": "O dinheiro da compra não passa pelo sistema: ele só registra créditos. Seta tracejada indica integração ainda não ativa."
     },
     {
       "type": "architecture",
@@ -244,22 +246,22 @@
         "items": [
           {
             "title": "Cliente",
-            "text": "vê o próprio saldo e histórico"
+            "text": "escaneia cupom, vê saldo e prazo, pede troca"
           },
           {
             "title": "Operador de caixa",
-            "text": "busca, cadastra, lança crédito e resgate"
+            "text": "confere e confirma trocas, consulta cliente"
           },
           {
-            "title": "Administrador",
-            "text": "tudo do caixa e gestão do catálogo"
+            "title": "Dono (admin)",
+            "text": "regras, cupons, prêmios e ajuste manual"
           }
         ]
       },
       "access": {
         "band": "Controle de acesso",
-        "title": "Login por perfil (hoje com token provisório)",
-        "text": "caixa e admin entram com senha; cliente só informa o telefone. JWT na fase 2 e código por WhatsApp/SMS na fase 3"
+        "title": "Login por perfil, com limite de tentativas",
+        "text": "caixa e admin entram com senha (JWT de 8 h); cliente entra com código de 6 dígitos (sessão de 30 dias). Senha ou código errado demais bloqueia por um tempo"
       },
       "modules": {
         "title": "Módulos da API (FastAPI)",
@@ -267,28 +269,28 @@
           {
             "id": "m-auth",
             "title": "Autenticação e perfis",
-            "text": "login de caixa e admin; checagem de perfil por rota"
+            "text": "JWT do painel, código do cliente e autocadastro com aceite LGPD"
           },
           {
-            "id": "m-cli",
-            "title": "Cadastro de clientes",
-            "text": "busca e cadastro pelo telefone"
-          },
-          {
-            "id": "m-cat",
-            "title": "Catálogo de produtos",
-            "text": "créditos por produto, editado pelo admin"
+            "id": "m-cup",
+            "title": "Cupons",
+            "text": "lotes com QR, uso único, validade, 1 por dia e bônus no primeiro"
           },
           {
             "id": "m-ledger",
             "title": "Carteira e ledger",
             "core": true,
-            "text": "saldo e transação gravados juntos, com trava na carteira; bloqueia saldo negativo"
+            "text": "saldo e transação gravados juntos, com motivo; expiração após 30 dias sem compra"
           },
           {
-            "id": "m-ext",
-            "title": "Extrato do cliente",
-            "text": "saldo e histórico exibidos no PWA"
+            "id": "m-res",
+            "title": "Trocas por prêmio",
+            "text": "código de 6 dígitos, créditos reservados e estorno se vencer"
+          },
+          {
+            "id": "m-adm",
+            "title": "Área do dono",
+            "text": "regras do programa, lotes de cupons e catálogo de prêmios"
           }
         ]
       },
@@ -298,21 +300,21 @@
           {
             "id": "x-db",
             "title": "Banco de dados",
-            "text": "SQLite hoje; Postgres/Supabase com migrations (Alembic) na fase 5"
+            "text": "SQLite local; Postgres/Supabase com migrações Alembic (0001 a 0005)"
           },
           {
             "id": "x-otp",
-            "title": "Provedor WhatsApp/SMS",
-            "text": "código de acesso do cliente",
+            "title": "WhatsApp Business",
+            "text": "envio do código de entrada",
             "manual": {
               "label": "ainda não existe:",
-              "text": "cliente entra só com o telefone no MVP"
+              "text": "em desenvolvimento o código aparece na tela"
             }
           },
           {
             "id": "x-host",
-            "title": "Hospedagem (Docker)",
-            "text": "API e front publicados na fase 5"
+            "title": "Hospedagem (Vercel)",
+            "text": "API e app publicados na homologação (pausada)"
           }
         ]
       },
@@ -330,18 +332,18 @@
       "cross": {
         "band": "Auditoria e LGPD: transversal a todos os módulos",
         "title": "Trilha de auditoria e proteção de dados",
-        "text": "registrar qual operador fez cada lançamento e qual produto gerou o crédito; estorno em vez de débito manual; extrato visível só para o dono da carteira"
+        "text": "cada transação guarda motivo e quem agiu; cupom, confirmação e estorno usam atualização condicional (sem crédito em dobro); extrato visível só para o dono da carteira"
       }
     },
     {
       "type": "swimlane",
-      "title": "Fluxo operacional, da compra ao resgate",
-      "subtitle": "Cada etapa na raia de quem executa; S1 a S4 são os estados que o cliente enxerga",
+      "title": "Fluxo operacional, do cupom ao prêmio",
+      "subtitle": "Cada etapa na raia de quem executa; S1 a S5 são os estados que o cliente enxerga",
       "status_title": "O que o cliente vê",
       "lanes": [
         {
           "id": "admin",
-          "title": "Administrador",
+          "title": "Dono (admin)",
           "tone": "orange"
         },
         {
@@ -362,124 +364,129 @@
       ],
       "steps": [
         {
-          "id": "s-cat",
+          "id": "s-gera",
           "lane": "admin",
           "row": 1,
-          "title": "Cadastra produtos",
-          "text": "define os créditos de cada um"
+          "title": "Gera e imprime cupons",
+          "text": "folha A4 com 12 QR"
         },
         {
-          "id": "s-compra",
-          "lane": "cliente",
-          "row": 2,
-          "title": "Faz a compra",
-          "text": "informa o telefone"
-        },
-        {
-          "id": "s-busca",
+          "id": "s-entrega",
           "lane": "caixa",
+          "row": 2,
+          "title": "Entrega o cupom",
+          "text": "a cada compra"
+        },
+        {
+          "id": "s-escaneia",
+          "lane": "cliente",
           "row": 3,
-          "title": "Busca ou cadastra",
-          "text": "pelo telefone",
+          "title": "Escaneia o QR",
+          "text": "entra com telefone e código",
           "status": {
             "code": "S1",
-            "label": "Cliente cadastrado"
+            "label": "Conta criada"
           }
         },
         {
-          "id": "s-lanca",
-          "lane": "caixa",
-          "row": 4,
-          "title": "Lança o crédito",
-          "text": "clica no produto vendido"
-        },
-        {
-          "id": "s-grava",
+          "id": "s-credita",
           "lane": "sistema",
-          "row": 5,
-          "title": "Grava saldo e histórico",
-          "text": "na mesma transação de banco",
+          "row": 4,
+          "title": "Credita cupom e bônus",
+          "text": "uso único, 1 por dia",
           "status": {
             "code": "S2",
-            "label": "Crédito na carteira"
+            "label": "Créditos na carteira"
           }
         },
         {
-          "id": "s-consulta",
+          "id": "s-junta",
           "lane": "cliente",
-          "row": 6,
-          "title": "Consulta o saldo",
-          "text": "no PWA",
+          "row": 5,
+          "title": "Junta créditos",
+          "text": "vencem em 30 dias sem compra",
           "status": {
             "code": "S3",
-            "label": "Saldo e histórico visíveis"
+            "label": "Saldo e prazo visíveis"
           }
         },
         {
-          "id": "s-pede",
+          "id": "s-escolhe",
           "lane": "cliente",
-          "row": 7,
-          "title": "Pede o resgate",
-          "text": "numa próxima visita"
+          "row": 6,
+          "title": "Escolhe um prêmio",
+          "text": "item do cardápio"
         },
         {
-          "id": "s-resgate",
-          "lane": "caixa",
-          "row": 8,
-          "title": "Lança o resgate",
-          "text": "quantidade de créditos"
-        },
-        {
-          "id": "s-debita",
+          "id": "s-reserva",
           "lane": "sistema",
-          "row": 9,
-          "title": "Valida e debita",
-          "text": "recusa se faltar saldo",
-          "tone": "green",
+          "row": 7,
+          "title": "Reserva os créditos",
+          "text": "código de 6 dígitos, 10 min",
           "status": {
             "code": "S4",
-            "label": "Resgate concluído"
+            "label": "Código para o balcão"
+          }
+        },
+        {
+          "id": "s-confere",
+          "lane": "caixa",
+          "row": 8,
+          "title": "Confere e entrega",
+          "text": "digita o código"
+        },
+        {
+          "id": "s-confirma",
+          "lane": "sistema",
+          "row": 9,
+          "title": "Confirma a troca",
+          "text": "código vencido devolve",
+          "tone": "green",
+          "status": {
+            "code": "S5",
+            "label": "Prêmio entregue"
           }
         }
       ],
       "links": [
         {
-          "from": "s-cat",
-          "to": "s-compra"
+          "from": "s-gera",
+          "to": "s-entrega"
         },
         {
-          "from": "s-compra",
-          "to": "s-busca"
+          "from": "s-entrega",
+          "to": "s-escaneia"
         },
         {
-          "from": "s-busca",
-          "to": "s-lanca"
-        },
-        {
-          "from": "s-lanca",
-          "to": "s-grava",
+          "from": "s-escaneia",
+          "to": "s-credita",
           "kind": "data"
         },
         {
-          "from": "s-grava",
-          "to": "s-consulta"
+          "from": "s-credita",
+          "to": "s-junta"
         },
         {
-          "from": "s-consulta",
-          "to": "s-pede",
+          "from": "s-junta",
+          "to": "s-escolhe",
           "label": "volta à loja"
         },
         {
-          "from": "s-pede",
-          "to": "s-resgate"
+          "from": "s-escolhe",
+          "to": "s-reserva",
+          "kind": "data"
         },
         {
-          "from": "s-resgate",
-          "to": "s-debita",
+          "from": "s-reserva",
+          "to": "s-confere"
+        },
+        {
+          "from": "s-confere",
+          "to": "s-confirma",
           "kind": "data"
         }
       ],
-      "note": "A volta do cliente entre S3 e o resgate é exatamente o que o piloto precisa medir. Hoje o lançamento não registra o operador; isso entra na fase 4."
+      "note": "A volta do cliente entre S3 e a troca é exatamente o que o piloto precisa medir. O caixa não decide créditos: só entrega cupons e confirma trocas."
     },
     {
       "type": "roadmap",
@@ -487,61 +494,63 @@
       "subtitle": "Cada fase só começa quando o critério de saída da anterior é cumprido",
       "phases": [
         {
-          "name": "Fechar o MVP atual",
+          "name": "MVP do caixa (concluída)",
           "items": [
-            "PR da feature/painel-caixa-completo para a develop",
-            "Remover a branch remota duplicada"
+            "Painel do caixa integrado à API",
+            "Catálogo e identidade visual",
+            "Release v0.2.0"
           ],
-          "exit": "Painel do caixa mergeado na develop"
+          "exit": "Painel do caixa na main"
         },
         {
-          "name": "Segurança mínima",
+          "name": "Segurança mínima (concluída)",
           "items": [
             "JWT assinado com expiração",
-            "Senhas com hash (bcrypt)",
-            "CORS restrito à origem do front",
-            "Escape de texto no front (XSS)"
+            "CORS restrito e XSS eliminado",
+            "Validação de entrada e config por ambiente"
           ],
-          "exit": "Nenhuma rota do caixa aceita token forjado"
+          "exit": "Nenhuma rota aceita token forjado"
         },
         {
-          "name": "Acesso do cliente",
+          "name": "Acesso do cliente (concluída)",
           "items": [
-            "Código de acesso por WhatsApp/SMS",
+            "Código de 6 dígitos e autocadastro",
+            "Aceite LGPD versionado",
             "Extrato protegido por login"
           ],
-          "exit": "Cliente só vê o próprio extrato depois do código"
+          "exit": "Cliente só vê o próprio extrato"
         },
         {
-          "name": "Auditoria e testes",
+          "name": "Cupons e crédito automático (concluída)",
           "items": [
-            "Operador e produto em cada transação",
-            "Estorno no lugar do débito manual",
-            "Testes com pytest para saldo, resgate e perfis"
+            "Cupom com QR, bônus e expiração",
+            "Troca por prêmio confirmada no balcão",
+            "Área do dono e limites de tentativa",
+            "Marca Maná Comedoria e prêmios reais"
           ],
-          "exit": "Todo lançamento é rastreável e os testes passam"
+          "exit": "157 testes passando; release v0.3.0 preparada"
         },
         {
           "name": "Infra e deploy",
           "items": [
-            "Migrations com Alembic",
-            "Postgres/Supabase",
-            "Docker e publicação",
+            "Postgres/Supabase e Vercel (homologação)",
+            "WhatsApp Business aprovado pela Meta",
+            "Termos e política de privacidade",
             "Backup do banco"
           ],
-          "exit": "Sistema no ar em endereço público, com backup"
+          "exit": "Cliente real recebe o código e usa o app no celular"
         },
         {
           "name": "Piloto na loja",
           "items": [
             "Treinar a equipe do caixa",
             "Rodar por 3 a 4 semanas",
-            "Medir o % de clientes com crédito que voltam em até 30 dias",
+            "Medir o % de clientes que voltam em até 30 dias",
             "Decidir: escalar, ajustar ou parar"
           ]
         }
       ],
-      "note": "Sem datas: o prazo de cada fase depende da disponibilidade de desenvolvimento. Duração do piloto e janela de 30 dias são propostas, a validar com o Manaçaí.",
+      "note": "Sem datas: o prazo de cada fase depende da disponibilidade de desenvolvimento e das decisões do dono. Duração do piloto é proposta, a validar com o Maná Comedoria.",
       "start_at": 1
     },
     {
@@ -551,23 +560,28 @@
       "items": [
         {
           "kind": "dado",
-          "text": "Caixa lança créditos manualmente; cliente se identifica pelo telefone",
+          "text": "Crédito vem do cupom com QR: 50 por cupom e 100 de bônus no primeiro (editável no admin)",
           "next": "Código atual"
         },
         {
           "kind": "dado",
-          "text": "Créditos por produto são definidos pelo admin no catálogo",
-          "next": "Código atual"
+          "text": "Saldo vence após 30 dias sem compra; cada compra renova o prazo",
+          "next": "Decisão do dono"
+        },
+        {
+          "kind": "dado",
+          "text": "O dono paga hospedagem e mensagens; cupons saem do próprio sistema",
+          "next": "Decisão do dono"
         },
         {
           "kind": "premissa",
-          "text": "Acesso do cliente por código via WhatsApp/SMS (recomendado, não decidido)",
-          "next": "Dev decide antes da fase 3"
+          "text": "Custo dos prêmios: 20 créditos por R$ 1 do cardápio (cupom vale cerca de R$ 2,50)",
+          "next": "Validar com o dono"
         },
         {
           "kind": "premissa",
           "text": "Métrica de sucesso: % de clientes com crédito que voltam em até 30 dias",
-          "next": "Validar com o dono do Manaçaí"
+          "next": "Validar com o dono"
         },
         {
           "kind": "estimativa",
@@ -576,33 +590,33 @@
         },
         {
           "kind": "risco",
-          "text": "Token provisório permite se passar por caixa ou admin",
-          "next": "Fase 2"
+          "text": "Sem WhatsApp Business aprovado, o cliente não recebe o código e não há produção",
+          "next": "Dono iniciar cadastro na Meta"
         },
         {
           "kind": "risco",
-          "text": "Extrato aberto pelo telefone expõe dados pessoais (LGPD)",
-          "next": "Fase 3"
+          "text": "Folha de cupons perdida ou repassada (mitigado: cancelamento de lote no admin)",
+          "next": "Treinar o caixa"
         },
         {
           "kind": "risco",
-          "text": "Sem registro do operador, erro ou fraude no caixa não é rastreável",
-          "next": "Fase 4"
+          "text": "Aceite LGPD existe, mas o texto dos termos e da política ainda não",
+          "next": "Antes do piloto"
         },
         {
           "kind": "pergunta",
-          "text": "O que o cliente ganha no resgate e quantos créditos isso custa?",
-          "next": "Dono do Manaçaí"
+          "text": "Catálogo final: quais itens viram prêmio e quanto custam?",
+          "next": "Dono do Maná"
         },
         {
           "kind": "pergunta",
-          "text": "Os créditos expiram? Existe linha de base de retorno sem o programa?",
-          "next": "Dono do Manaçaí"
+          "text": "A tabela de pontos por produto pode ficar fora das telas?",
+          "next": "Dono do Maná"
         },
         {
           "kind": "pergunta",
-          "text": "Quem paga desenvolvimento, hospedagem e mensagens?",
-          "next": "Dev e dono do Manaçaí"
+          "text": "Quando começa o piloto? Existe linha de base de retorno sem o programa?",
+          "next": "Dono do Maná"
         }
       ]
     }

@@ -47,7 +47,31 @@ if not db.query(models.Usuario).filter_by(telefone="83977776666").first():
         senha_hash=pwd_context.hash("senha1234"),
     ))
 
+# Real items from the Maná Comedoria menu as rewards. Provisional cost rule for testing:
+# 20 credits per R$ 1 of menu price (a 50-credit coupon is worth about R$ 2,50),
+# rounded to tens. The owner sets the final catalogue in admin.html.
+CREDITOS_POR_REAL = 20
+premios = [
+    ("Café pequeno", 3.00),
+    ("Café grande", 6.00),
+    ("Tapioca de coco", 7.90),
+    ("Suco de polpa 300ml", 8.90),
+    ("Pastel de forno", 9.99),
+    ("Frozen de morango 300ml", 12.90),
+    ("Coxinha tradicional", 13.90),
+    ("Cuscuz com ovo", 15.90),
+    ("Açaí 300ml (suco simples)", 21.90),
+    ("Pizza brotinho tradicional", 29.99),
+]
+for nome, preco in premios:
+    if not db.query(models.Premio).filter_by(nome=nome).first():
+        db.add(models.Premio(
+            estabelecimento_id=models.ESTABELECIMENTO_PADRAO,
+            nome=nome,
+            custo_creditos=round(preco * CREDITOS_POR_REAL / 10) * 10,
+        ))
+
 db.commit()
 db.close()
-print("Seed concluído: produtos, cliente de teste (83999998888), caixa (83988887777) "
-      "e admin (83977776666), ambos com a senha senha1234.")
+print("Seed concluído: produtos, prêmios do cardápio, cliente de teste (83999998888), "
+      "caixa (83988887777) e admin (83977776666), ambos com a senha senha1234.")

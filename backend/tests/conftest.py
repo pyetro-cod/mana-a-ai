@@ -76,7 +76,7 @@ def banco_limpo(esquema):
         db.flush()
         db.add(models.Carteira(usuario_id=cliente.id, saldo=50))
         # Same rows migration 0002 seeds in the real database.
-        db.add(models.Estabelecimento(id=models.ESTABELECIMENTO_PADRAO, nome="Manaçaí"))
+        db.add(models.Estabelecimento(id=models.ESTABELECIMENTO_PADRAO, nome="Maná Comedoria"))
         db.flush()
         db.add(models.Configuracao(estabelecimento_id=models.ESTABELECIMENTO_PADRAO))
         db.commit()
