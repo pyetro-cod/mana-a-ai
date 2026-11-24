@@ -85,6 +85,7 @@ def solicitar_codigo(db: Session, telefone: str) -> None:
         db.delete(registro)
         db.commit()
         raise
+    return codigo
 
 
 def conferir_codigo(db: Session, telefone: str, codigo: str, consumir: bool = True) -> None:

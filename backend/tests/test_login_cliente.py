@@ -68,7 +68,7 @@ def test_autocadastro_de_telefone_novo(client, codigos_enviados):
     assert res.json()["novo_cadastro"] is True
 
     extrato = client.get("/clientes/me/extrato", headers=auth(res.json()["token"])).json()
-    assert extrato == {"saldo": 0, "historico": []}
+    assert extrato == {"saldo": 0, "vence_em": None, "historico": []}
 
     db = SessionLocal()
     try:
@@ -218,4 +218,33 @@ def test_configuracao_de_envio_insegura_ou_incompleta_impede_a_api_de_subir(monk
     for variavel, valor in ambiente.items():
         monkeypatch.setenv(variavel, valor)
     with pytest.raises(RuntimeError):
+        config._load_settings()
+
+
+# ---------- atalho de desenvolvimento ----------
+
+def test_codigo_nao_volta_na_resposta_por_padrao(client, codigos_enviados):
+    assert "codigo_dev" not in _pedir(client).json()
+
+
+def test_atalho_de_dev_devolve_o_codigo_que_funciona(client, codigos_enviados, monkeypatch):
+    from dataclasses import replace
+    from app.routers import auth as rota_auth
+    monkeypatch.setattr(rota_auth, "settings", replace(settings, otp_mostrar_no_app=True))
+    codigo = _pedir(client).json()["codigo_dev"]
+    assert codigo == codigos_enviados[TEL_CLIENTE]
+    assert _entrar(client, TEL_CLIENTE, codigo).status_code == 200
+
+
+@pytest.mark.parametrize("ambiente", [
+    {"OTP_MOSTRAR_NO_APP": "1", "APP_ENV": "prod", "OTP_PROVIDER": "whatsapp",
+     "WHATSAPP_TOKEN": "x", "WHATSAPP_PHONE_NUMBER_ID": "x", "WHATSAPP_TEMPLATE": "x"},
+    {"OTP_MOSTRAR_NO_APP": "1", "OTP_PROVIDER": "whatsapp",
+     "WHATSAPP_TOKEN": "x", "WHATSAPP_PHONE_NUMBER_ID": "x", "WHATSAPP_TEMPLATE": "x"},
+])
+def test_atalho_de_dev_nunca_sobe_fora_de_dev(monkeypatch, ambiente):
+    from app import config
+    for variavel, valor in ambiente.items():
+        monkeypatch.setenv(variavel, valor)
+    with pytest.raises(RuntimeError, match="OTP_MOSTRAR_NO_APP"):
         config._load_settings()

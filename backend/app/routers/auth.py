@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from .. import models, otp, schemas
+from .. import limites, models, otp, schemas
 from ..config import settings
 from ..database import get_db
 from ..envio_codigo import EnvioFalhou
@@ -19,14 +19,28 @@ VERSAO_TERMOS = "2026-11"
 
 @router.post("/login", response_model=schemas.LoginResponse)
 def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+    try:
+        # Keyed by phone, checked before bcrypt: a blocked phone costs the server nothing.
+        limites.checar(db, "login", payload.telefone)
+    except limites.LimiteExcedido as exc:
+        raise HTTPException(
+            status_code=429,
+            detail="Muitas tentativas erradas. Aguarde alguns minutos e tente de novo",
+            headers={"Retry-After": str(exc.segundos_para_tentar)},
+        )
+
     usuario = db.query(models.Usuario).filter(
         models.Usuario.telefone == payload.telefone,
         models.Usuario.perfil.in_(["caixa", "admin"]),
     ).first()
 
     if not usuario or not usuario.senha_hash or not pwd_context.verify(payload.senha, usuario.senha_hash):
+        # Counted for unknown phones too, so the limit does not reveal which phones exist.
+        limites.registrar_falha(db, "login", payload.telefone)
         raise HTTPException(status_code=401, detail="Telefone ou senha inválidos")
 
+    limites.limpar(db, "login", payload.telefone)
+    db.commit()
     token = criar_token(usuario.id, usuario.perfil)
     return schemas.LoginResponse(token=token, perfil=usuario.perfil)
 
@@ -38,7 +52,7 @@ def solicitar_codigo(payload: schemas.SolicitarCodigoRequest, db: Session = Depe
     """Envia um código de acesso ao telefone. A resposta é a mesma para telefone
     cadastrado ou não, para não revelar quem é cliente."""
     try:
-        otp.solicitar_codigo(db, payload.telefone)
+        codigo = otp.solicitar_codigo(db, payload.telefone)
     except otp.LimiteExcedido as exc:
         raise HTTPException(
             status_code=429,
@@ -47,6 +61,8 @@ def solicitar_codigo(payload: schemas.SolicitarCodigoRequest, db: Session = Depe
         )
     except EnvioFalhou:
         raise HTTPException(status_code=503, detail="Não foi possível enviar o código agora, tente de novo")
+    if settings.otp_mostrar_no_app:
+        return {"detail": "Código enviado", "codigo_dev": codigo}
     return {"detail": "Código enviado"}
 
 

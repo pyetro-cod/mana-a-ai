@@ -1,14 +1,15 @@
 """Popula o banco com dados de exemplo para testar a API localmente.
-Rodar com: python seed.py
+Rodar depois de criar as tabelas:
+    alembic upgrade head
+    python seed.py
 """
 from passlib.context import CryptContext
 
-from app.database import SessionLocal, engine, Base
+from app.database import SessionLocal
 from app import models
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-Base.metadata.create_all(bind=engine)
 db = SessionLocal()
 
 produtos = [
@@ -37,6 +38,16 @@ if not db.query(models.Usuario).filter_by(telefone="83988887777").first():
     )
     db.add(caixa)
 
+# Dev-only owner account: opens admin.html (rules, coupon sheets, prizes).
+if not db.query(models.Usuario).filter_by(telefone="83977776666").first():
+    db.add(models.Usuario(
+        nome="Dono (admin)",
+        telefone="83977776666",
+        perfil="admin",
+        senha_hash=pwd_context.hash("senha1234"),
+    ))
+
 db.commit()
 db.close()
-print("Seed concluído: produtos, cliente de teste (83999998888) e caixa (83988887777 / senha1234).")
+print("Seed concluído: produtos, cliente de teste (83999998888), caixa (83988887777) "
+      "e admin (83977776666), ambos com a senha senha1234.")

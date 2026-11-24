@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manaçaí — Administração</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="stage admin-page">
+    <div class="admin-topo">
+      <div class="brand">
+        <img src="logo.jpg" alt="Manaçaí">
+        <span>Administração</span>
+      </div>
+      <a class="logout-btn" href="index.html">Voltar ao painel</a>
+    </div>
+
+    <div class="desk desk-single" id="semAcesso" style="display:none;">
+      <div class="desk-title">Área do dono</div>
+      <div class="status-line">Entre com um usuário <b>admin</b> no painel do caixa e volte para cá.</div>
+      <a class="btn-cheio btn-link" href="index.html">Ir para o painel</a>
+    </div>
+
+    <div id="adminConteudo" style="display:none;">
+
+      <section class="admin-card">
+        <div class="desk-title">Regras do programa</div>
+        <div class="regras-grid">
+          <label>Créditos por cupom<input type="number" id="cfg_creditos_por_cupom" min="1" max="1000"></label>
+          <label>Bônus de boas-vindas<input type="number" id="cfg_bonus_boas_vindas" min="0" max="1000"></label>
+          <label>Cupom vale (dias)<input type="number" id="cfg_validade_cupom_dias" min="1" max="365"></label>
+          <label>Saldo vence após (dias sem compra)<input type="number" id="cfg_dias_expiracao_saldo" min="1" max="365"></label>
+          <label>Código de resgate vale (min)<input type="number" id="cfg_validade_resgate_minutos" min="1" max="60"></label>
+          <label>Cupons por cliente por dia<input type="number" id="cfg_max_cupons_por_dia" min="1" max="10"></label>
+        </div>
+        <button class="btn-cheio btn-curto" id="btnSalvarRegras">Salvar regras</button>
+        <div class="feedback-line" id="regrasFeedback"></div>
+        <div class="status-line">Mudanças valem para os próximos cupons gerados; folhas já impressas mantêm o valor delas.</div>
+      </section>
+
+      <section class="admin-card">
+        <div class="desk-title">Cupons com QR</div>
+        <div class="admin-add-row">
+          <input type="number" class="valor" id="loteQuantidade" min="1" max="200" value="24">
+          <button id="btnGerarLote">Gerar cupons</button>
+        </div>
+        <div class="status-line" style="margin-top:6px;">Uma folha A4 tem 12 cupons. Entregue um a cada compra.</div>
+        <div class="feedback-line" id="loteFeedback"></div>
+        <div id="listaLotes"></div>
+      </section>
+
+      <section class="admin-card">
+        <div class="desk-title">Prêmios</div>
+        <div id="listaPremios"></div>
+        <div class="admin-add-row">
+          <input type="text" class="nome" id="novoPremioNome" placeholder="Ex.: Açaí 300ml" maxlength="80">
+          <input type="number" class="valor" id="novoPremioCusto" placeholder="Créditos" min="1">
+          <button id="btnAdicionarPremio">Adicionar</button>
+        </div>
+        <div class="feedback-line" id="premioFeedback"></div>
+      </section>
+
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
