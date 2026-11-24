@@ -1,6 +1,6 @@
-# Manaçaí — Programa de créditos
+# Maná Comedoria — Programa de créditos
 
-Programa de fidelidade com créditos digitais para o **Manaçaí** (ex-Maná Açaí), em João Pessoa. O cliente ganha créditos ao escanear o QR do cupom que recebe na compra e troca os créditos por prêmios no balcão. A pergunta que o MVP precisa responder é se o crédito digital traz o cliente de volta.
+Programa de fidelidade com créditos digitais para o **Maná Comedoria** (antes Manaçaí / Maná Açaí), em João Pessoa. O cliente ganha créditos ao escanear o QR do cupom que recebe na compra e troca os créditos por prêmios no balcão. A pergunta que o MVP precisa responder é se o crédito digital traz o cliente de volta.
 
 ## Como funciona
 
