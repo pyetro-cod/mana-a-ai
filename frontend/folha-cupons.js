@@ -20,8 +20,7 @@ function cartao(cupom, lote){
   qr.src = cupom.qr;  // data:image/svg+xml: an <img> never runs scripts inside an SVG
   return el('div', { className: 'cupom' + (cupom.usado ? ' usado' : '') }, [
     el('div', { className: 'cupom-topo' }, [
-      el('img', { attrs: { src: 'logo.jpg', alt: '' } }),
-      el('span', { text: 'Manaçaí' }),
+      el('img', { attrs: { src: 'logo-mana.png', alt: 'Maná Comedoria' } }),
     ]),
     el('div', { className: 'cupom-valor' }, [
       document.createTextNode('Escaneie e ganhe '),
